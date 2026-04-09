@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Intune Compliance Dashboard - JBKnowledge</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f0f2f5; color: #1a1a2e; }
+
+    /* Header */
+    .header { background: linear-gradient(135deg, #0078d4, #005a9e); color: white; padding: 16px 24px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 8px rgba(0,0,0,0.15); }
+    .header h1 { font-size: 20px; font-weight: 600; }
+    .header .subtitle { font-size: 12px; opacity: 0.8; }
+    .header-actions { display: flex; gap: 12px; align-items: center; }
+    .header-actions button { background: rgba(255,255,255,0.15); color: white; border: 1px solid rgba(255,255,255,0.3); padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 13px; transition: background 0.2s; }
+    .header-actions button:hover { background: rgba(255,255,255,0.25); }
+    .last-updated { font-size: 11px; opacity: 0.7; }
+
+    /* Tabs */
+    .tabs { display: flex; background: white; border-bottom: 2px solid #e0e0e0; padding: 0 24px; }
+    .tab { padding: 12px 20px; cursor: pointer; font-size: 14px; font-weight: 500; color: #666; border-bottom: 3px solid transparent; transition: all 0.2s; }
+    .tab:hover { color: #0078d4; }
+    .tab.active { color: #0078d4; border-bottom-color: #0078d4; }
+
+    /* Content */
+    .content { padding: 24px; max-width: 1400px; margin: 0 auto; }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    /* Summary Cards */
+    .summary-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px; }
+    .card { background: white; border-radius: 10px; padding: 20px; box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
+    .card .label { font-size: 12px; color: #666; text-transform: uppercase; letter-spacing: 0.5px; }
+    .card .value { font-size: 32px; font-weight: 700; margin-top: 4px; }
+    .card .value.green { color: #107c10; }
+    .card .value.red { color: #d13438; }
+    .card .value.orange { color: #ff8c00; }
+    .card .value.blue { color: #0078d4; }
+    .card .value.gray { color: #666; }
+
+    /* Table */
+    .table-container { background: white; border-radius: 10px; box-shadow: 0 1px 4px rgba(0,0,0,0.08); overflow: hidden; }
+    .table-header { padding: 16px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e0e0e0; }
+    .table-header h3 { font-size: 16px; }
+    .search-box { padding: 8px 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 13px; width: 260px; }
+    .filter-group { display: flex; gap: 8px; align-items: center; }
+    .filter-select { padding: 8px 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 13px; background: white; }
+
+    table { width: 100%; border-collapse: collapse; }
+    th { text-align: left; padding: 10px 16px; font-size: 12px; color: #666; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid #e0e0e0; background: #fafafa; }
+    td { padding: 12px 16px; font-size: 13px; border-bottom: 1px solid #f0f0f0; }
+    tr:hover { background: #f8f9fa; }
+
+    /* Status Badges */
+    .badge { display: inline-block; padding: 4px 10px; border-radius: 12px; font-size: 11px; font-weight: 600; text-transform: uppercase; }
+    .badge.compliant { background: #dff6dd; color: #107c10; }
+    .badge.noncompliant { background: #fde7e9; color: #d13438; }
+    .badge.unknown { background: #f0f0f0; color: #666; }
+    .badge.grace { background: #fff4ce; color: #ff8c00; }
+    .badge.entra-only { background: #e8f0fe; color: #0078d4; }
+    .badge.enabled { background: #dff6dd; color: #107c10; }
+    .badge.disabled { background: #f0f0f0; color: #666; }
+    .badge.report-only { background: #fff4ce; color: #ff8c00; }
+
+    /* Sync Button */
+    .sync-btn { background: #0078d4; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 12px; }
+    .sync-btn:hover { background: #005a9e; }
+    .sync-btn:disabled { background: #ccc; cursor: not-allowed; }
+
+    /* Alerts */
+    .alerts-list { display: flex; flex-direction: column; gap: 12px; }
+    .alert-item { background: white; border-radius: 10px; padding: 16px 20px; box-shadow: 0 1px 4px rgba(0,0,0,0.08); border-left: 4px solid; display: flex; justify-content: space-between; align-items: center; }
+    .alert-item.critical { border-left-color: #d13438; }
+    .alert-item.warning { border-left-color: #ff8c00; }
+    .alert-item.info { border-left-color: #0078d4; }
+    .alert-title { font-weight: 600; font-size: 14px; }
+    .alert-detail { font-size: 12px; color: #666; margin-top: 4px; }
+    .alert-count { font-size: 24px; font-weight: 700; }
+
+    /* Loading */
+    .loading { text-align: center; padding: 60px; color: #666; }
+    .spinner { display: inline-block; width: 40px; height: 40px; border: 3px solid #e0e0e0; border-top-color: #0078d4; border-radius: 50%; animation: spin 0.8s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Toast */
+    .toast { position: fixed; bottom: 20px; right: 20px; background: #323232; color: white; padding: 12px 20px; border-radius: 8px; font-size: 13px; z-index: 1000; opacity: 0; transition: opacity 0.3s; }
+    .toast.show { opacity: 1; }
+
+    /* Policy Card Grid */
+    .policy-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 16px; }
+    .policy-card { background: white; border-radius: 10px; padding: 20px; box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
+    .policy-card h4 { font-size: 14px; margin-bottom: 8px; }
+    .policy-card .meta { font-size: 12px; color: #666; }
+    .policy-stats { display: flex; gap: 12px; margin-top: 12px; }
+    .policy-stat { text-align: center; }
+    .policy-stat .num { font-size: 18px; font-weight: 700; }
+    .policy-stat .lbl { font-size: 10px; color: #666; text-transform: uppercase; }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <div>
+      <h1>Intune Compliance Dashboard</h1>
+      <div class="subtitle">JBKnowledge - Device Management</div>
+    </div>
+    <div class="header-actions">
+      <span class="last-updated" id="lastUpdated">Not loaded</span>
+      <button onclick="refreshAll()">Refresh</button>
+      <button onclick="exportCSV('all')">Export CSV</button>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <div class="tab active" data-tab="devices">Devices</div>
+    <div class="tab" data-tab="policies">Policies</div>
+    <div class="tab" data-tab="alerts">Alerts</div>
+    <div class="tab" data-tab="reports">Reports</div>
+  </div>
+
+  <!-- DEVICES TAB -->
+  <div class="content">
+    <div id="devices" class="tab-content active">
+      <div class="summary-cards" id="deviceSummary">
+        <div class="card"><div class="label">Total Devices</div><div class="value blue" id="totalDevices">-</div></div>
+        <div class="card"><div class="label">Compliant</div><div class="value green" id="compliantDevices">-</div></div>
+        <div class="card"><div class="label">Non-Compliant</div><div class="value red" id="nonCompliantDevices">-</div></div>
+        <div class="card"><div class="label">Grace Period</div><div class="value orange" id="gracePeriodDevices">-</div></div>
+        <div class="card"><div class="label">Entra Only</div><div class="value gray" id="entraOnlyDevices">-</div></div>
+        <div class="card"><div class="label">Stale (7+ days)</div><div class="value red" id="staleDevices">-</div></div>
+      </div>
+
+      <div class="table-container">
+        <div class="table-header">
+          <h3>All Devices</h3>
+          <div class="filter-group">
+            <input type="text" class="search-box" id="deviceSearch" placeholder="Search devices..." oninput="filterDevices()">
+            <select class="filter-select" id="complianceFilter" onchange="filterDevices()">
+              <option value="all">All States</option>
+              <option value="compliant">Compliant</option>
+              <option value="noncompliant">Non-Compliant</option>
+              <option value="grace_period">Grace Period</option>
+              <option value="entra_only">Entra Only</option>
+            </select>
+            <select class="filter-select" id="osFilter" onchange="filterDevices()">
+              <option value="all">All OS</option>
+              <option value="Windows">Windows</option>
+              <option value="iOS">iOS</option>
+              <option value="Android">Android</option>
+              <option value="macOS">macOS</option>
+            </select>
+          </div>
+        </div>
+        <div style="overflow-x:auto;">
+          <table>
+            <thead>
+              <tr>
+                <th>Device Name</th>
+                <th>User</th>
+                <th>OS</th>
+                <th>Compliance</th>
+                <th>Last Sync</th>
+                <th>Enrolled</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="devicesTable">
+              <tr><td colspan="7" class="loading"><div class="spinner"></div><br>Loading devices...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- POLICIES TAB -->
+    <div id="policies" class="tab-content">
+      <div class="summary-cards" id="policySummary">
+        <div class="card"><div class="label">Compliance Policies</div><div class="value blue" id="compliancePolicyCount">-</div></div>
+        <div class="card"><div class="label">Conditional Access</div><div class="value blue" id="caPolicyCount">-</div></div>
+        <div class="card"><div class="label">App Protection</div><div class="value blue" id="appProtectionCount">-</div></div>
+      </div>
+
+      <h3 style="margin-bottom:16px;">Compliance Policies</h3>
+      <div class="policy-grid" id="compliancePoliciesGrid"></div>
+
+      <h3 style="margin:24px 0 16px;">Conditional Access Policies</h3>
+      <div class="policy-grid" id="caPoliciesGrid"></div>
+    </div>
+
+    <!-- ALERTS TAB -->
+    <div id="alerts" class="tab-content">
+      <div class="summary-cards">
+        <div class="card"><div class="label">Critical Alerts</div><div class="value red" id="criticalAlerts">-</div></div>
+        <div class="card"><div class="label">Warnings</div><div class="value orange" id="warningAlerts">-</div></div>
+        <div class="card"><div class="label">Info</div><div class="value blue" id="infoAlerts">-</div></div>
+      </div>
+      <div class="alerts-list" id="alertsList"></div>
+    </div>
+
+    <!-- REPORTS TAB -->
+    <div id="reports" class="tab-content">
+      <div class="summary-cards">
+        <div class="card" style="cursor:pointer;" onclick="exportCSV('all')">
+          <div class="label">All Devices Report</div>
+          <div class="value blue" style="font-size:16px;">Download CSV</div>
+        </div>
+        <div class="card" style="cursor:pointer;" onclick="exportCSV('noncompliant')">
+          <div class="label">Non-Compliant Report</div>
+          <div class="value red" style="font-size:16px;">Download CSV</div>
+        </div>
+        <div class="card" style="cursor:pointer;" onclick="exportCSV('grace')">
+          <div class="label">Grace Period Report</div>
+          <div class="value orange" style="font-size:16px;">Download CSV</div>
+        </div>
+        <div class="card" style="cursor:pointer;" onclick="exportCSV('new')">
+          <div class="label">New Devices (30 days)</div>
+          <div class="value green" style="font-size:16px;">Download CSV</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    let allDevices = [];
+    let allPolicies = {};
+
+    // Tab switching
+    document.querySelectorAll('.tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+        tab.classList.add('active');
+        document.getElementById(tab.dataset.tab).classList.add('active');
+      });
+    });
+
+    // API calls
+    async function fetchDevices() {
+      try {
+        const res = await fetch('/api/devices');
+        const data = await res.json();
+        allDevices = data.devices || [];
+        updateDeviceSummary(data.summary);
+        renderDevices(allDevices);
+        generateAlerts(allDevices);
+      } catch (e) {
+        document.getElementById('devicesTable').innerHTML =
+          `<tr><td colspan="7" style="text-align:center;padding:40px;color:#d13438;">Error loading devices: ${e.message}</td></tr>`;
+      }
+    }
+
+    async function fetchPolicies() {
+      try {
+        const res = await fetch('/api/policies');
+        allPolicies = await res.json();
+        updatePolicySummary(allPolicies.summary);
+        renderPolicies(allPolicies);
+      } catch (e) {
+        document.getElementById('compliancePoliciesGrid').innerHTML =
+          `<div style="color:#d13438;">Error loading policies: ${e.message}</div>`;
+      }
+    }
+
+    function updateDeviceSummary(summary) {
+      if (!summary) return;
+      document.getElementById('totalDevices').textContent = summary.total;
+      document.getElementById('compliantDevices').textContent = summary.compliant;
+      document.getElementById('nonCompliantDevices').textContent = summary.nonCompliant;
+      document.getElementById('gracePeriodDevices').textContent = summary.inGracePeriod;
+      document.getElementById('entraOnlyDevices').textContent = summary.entraOnly;
+      document.getElementById('staleDevices').textContent = summary.notSyncedIn7Days;
+    }
+
+    function updatePolicySummary(summary) {
+      if (!summary) return;
+      document.getElementById('compliancePolicyCount').textContent = summary.compliancePolicies;
+      document.getElementById('caPolicyCount').textContent = summary.conditionalAccessPolicies;
+      document.getElementById('appProtectionCount').textContent = summary.appProtectionPolicies;
+    }
+
+    function renderDevices(devices) {
+      const tbody = document.getElementById('devicesTable');
+      if (!devices.length) {
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:40px;">No devices found</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = devices.map(d => {
+        const badgeClass = d.graceStatus === 'grace_period' ? 'grace' :
+          d.complianceState === 'compliant' ? 'compliant' :
+          d.complianceState === 'noncompliant' ? 'noncompliant' :
+          d.complianceState === 'entra_only' ? 'entra-only' : 'unknown';
+        const badgeText = d.graceStatus === 'grace_period' ? 'Grace Period' :
+          d.complianceState || 'Unknown';
+        const lastSync = d.lastSyncDateTime ? new Date(d.lastSyncDateTime).toLocaleDateString() : '-';
+        const enrolled = d.enrolledDateTime ? new Date(d.enrolledDateTime).toLocaleDateString() : '-';
+
+        return `<tr>
+          <td><strong>${esc(d.deviceName || 'Unknown')}</strong><br><span style="font-size:11px;color:#666;">${esc(d.model || '')}</span></td>
+          <td>${esc(d.userDisplayName || '-')}<br><span style="font-size:11px;color:#666;">${esc(d.userPrincipalName || '')}</span></td>
+          <td>${esc(d.operatingSystem || '-')} ${esc(d.osVersion || '')}</td>
+          <td><span class="badge ${badgeClass}">${badgeText}</span></td>
+          <td>${lastSync}${d.daysSinceSync > 7 ? '<br><span style="color:#d13438;font-size:11px;">'+d.daysSinceSync+' days ago</span>' : ''}</td>
+          <td>${enrolled}</td>
+          <td>${d.complianceState !== 'entra_only' ? `<button class="sync-btn" onclick="syncDevice('${d.id}',this)">Sync</button>` : '-'}</td>
+        </tr>`;
+      }).join('');
+    }
+
+    function renderPolicies(data) {
+      // Compliance policies
+      const compGrid = document.getElementById('compliancePoliciesGrid');
+      compGrid.innerHTML = (data.compliancePolicies || []).map(p => `
+        <div class="policy-card">
+          <h4>${esc(p.displayName)}</h4>
+          <div class="meta">${esc(p.description || 'No description')}</div>
+          <div class="meta">Platform: ${esc(p.platform.replace('#microsoft.graph.', ''))}</div>
+          <div class="policy-stats">
+            <div class="policy-stat"><div class="num" style="color:#107c10;">${p.statusSummary.compliant}</div><div class="lbl">Compliant</div></div>
+            <div class="policy-stat"><div class="num" style="color:#d13438;">${p.statusSummary.nonCompliant}</div><div class="lbl">Non-Compliant</div></div>
+            <div class="policy-stat"><div class="num" style="color:#ff8c00;">${p.statusSummary.inGracePeriod}</div><div class="lbl">Grace</div></div>
+            <div class="policy-stat"><div class="num" style="color:#666;">${p.statusSummary.error}</div><div class="lbl">Error</div></div>
+          </div>
+        </div>
+      `).join('') || '<div style="color:#666;">No compliance policies found</div>';
+
+      // Conditional Access
+      const caGrid = document.getElementById('caPoliciesGrid');
+      caGrid.innerHTML = (data.conditionalAccessPolicies || []).map(p => {
+        const stateClass = p.state === 'enabled' ? 'enabled' : p.state === 'disabled' ? 'disabled' : 'report-only';
+        return `
+          <div class="policy-card">
+            <h4>${esc(p.displayName)}</h4>
+            <div class="meta">State: <span class="badge ${stateClass}">${p.state}</span></div>
+          </div>
+        `;
+      }).join('') || '<div style="color:#666;">No conditional access policies found (check permissions)</div>';
+    }
+
+    function generateAlerts(devices) {
+      const alerts = [];
+      const nonCompliant = devices.filter(d => d.complianceState === 'noncompliant');
+      const stale = devices.filter(d => d.daysSinceSync > 7);
+      const grace = devices.filter(d => d.graceStatus === 'grace_period');
+
+      if (nonCompliant.length > 0) {
+        alerts.push({ level: 'critical', title: 'Non-Compliant Devices', detail: `${nonCompliant.length} device(s) are not compliant with policies`, count: nonCompliant.length });
+      }
+      if (stale.length > 0) {
+        alerts.push({ level: 'warning', title: 'Stale Devices', detail: `${stale.length} device(s) haven't synced in 7+ days`, count: stale.length });
+      }
+      if (grace.length > 0) {
+        alerts.push({ level: 'info', title: 'Grace Period Devices', detail: `${grace.length} device(s) are within enrollment grace period`, count: grace.length });
+      }
+      if (alerts.length === 0) {
+        alerts.push({ level: 'info', title: 'All Clear', detail: 'No compliance issues detected', count: 0 });
+      }
+
+      document.getElementById('criticalAlerts').textContent = alerts.filter(a => a.level === 'critical').length;
+      document.getElementById('warningAlerts').textContent = alerts.filter(a => a.level === 'warning').length;
+      document.getElementById('infoAlerts').textContent = alerts.filter(a => a.level === 'info').length;
+
+      document.getElementById('alertsList').innerHTML = alerts.map(a => `
+        <div class="alert-item ${a.level}">
+          <div>
+            <div class="alert-title">${a.title}</div>
+            <div class="alert-detail">${a.detail}</div>
+          </div>
+          ${a.count ? `<div class="alert-count">${a.count}</div>` : ''}
+        </div>
+      `).join('');
+    }
+
+    function filterDevices() {
+      const search = document.getElementById('deviceSearch').value.toLowerCase();
+      const compliance = document.getElementById('complianceFilter').value;
+      const os = document.getElementById('osFilter').value;
+
+      const filtered = allDevices.filter(d => {
+        const matchSearch = !search ||
+          (d.deviceName || '').toLowerCase().includes(search) ||
+          (d.userDisplayName || '').toLowerCase().includes(search) ||
+          (d.userPrincipalName || '').toLowerCase().includes(search);
+
+        const matchCompliance = compliance === 'all' ||
+          (compliance === 'grace_period' && d.graceStatus === 'grace_period') ||
+          d.complianceState === compliance;
+
+        const matchOs = os === 'all' || (d.operatingSystem || '').toLowerCase().includes(os.toLowerCase());
+
+        return matchSearch && matchCompliance && matchOs;
+      });
+
+      renderDevices(filtered);
+    }
+
+    async function syncDevice(deviceId, btn) {
+      btn.disabled = true;
+      btn.textContent = 'Syncing...';
+      try {
+        const res = await fetch(`/api/sync?deviceId=${deviceId}`, { method: 'POST' });
+        const data = await res.json();
+        if (data.success) {
+          showToast('Sync triggered successfully');
+        } else {
+          showToast('Sync failed: ' + (data.error || 'Unknown error'));
+        }
+      } catch (e) {
+        showToast('Sync error: ' + e.message);
+      }
+      btn.disabled = false;
+      btn.textContent = 'Sync';
+    }
+
+    async function exportCSV(type) {
+      try {
+        showToast('Generating report...');
+        const res = await fetch(`/api/reports?type=${type}&format=csv`);
+        const blob = await res.blob();
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `intune-report-${type}-${new Date().toISOString().split('T')[0]}.csv`;
+        a.click();
+        URL.revokeObjectURL(url);
+        showToast('Report downloaded');
+      } catch (e) {
+        showToast('Export error: ' + e.message);
+      }
+    }
+
+    function showToast(msg) {
+      const toast = document.getElementById('toast');
+      toast.textContent = msg;
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 3000);
+    }
+
+    function esc(str) {
+      const div = document.createElement('div');
+      div.textContent = str;
+      return div.innerHTML;
+    }
+
+    async function refreshAll() {
+      document.getElementById('lastUpdated').textContent = 'Loading...';
+      await Promise.all([fetchDevices(), fetchPolicies()]);
+      document.getElementById('lastUpdated').textContent = 'Updated: ' + new Date().toLocaleTimeString();
+    }
+
+    // Initial load
+    refreshAll();
+  </script>
+</body>
+</html>
