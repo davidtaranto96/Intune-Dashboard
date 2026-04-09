@@ -560,18 +560,28 @@
     async function fetchSignins() {
       try {
         const filter = document.getElementById('signinFilter').value;
-        const res = await fetch('/api/signins?filter=' + filter + '&top=200');
+        const res = await fetch('/api/signins?filter=' + filter + '&top=100');
         const data = await res.json();
+        if (data.error) {
+          let errMsg = data.error;
+          let hint = 'Make sure AuditLog.Read.All permission is granted with admin consent.';
+          if (errMsg.includes('Premium') || errMsg.includes('license') || errMsg.includes('404')) {
+            hint = 'Sign-in logs require Azure AD Premium P1 or P2 license. Check your tenant licensing.';
+          }
+          document.getElementById('signinsTable').innerHTML = '<tr><td colspan="7" style="text-align:center;padding:40px;color:#d13438;">API Error: ' + esc(errMsg).substring(0,200) + '<br><br><span style="font-size:12px;color:#666;">' + hint + '</span></td></tr>';
+          return;
+        }
         allSignins = data.signIns || [];
-        document.getElementById('totalSignins').textContent = data.summary.total;
-        document.getElementById('successSignins').textContent = data.summary.successful;
-        document.getElementById('blockedSignins').textContent = data.summary.blocked;
-        document.getElementById('caBlockedSignins').textContent = data.summary.caBlocked;
-        document.getElementById('mfaSignins').textContent = data.summary.mfaRequired;
-        document.getElementById('riskySignins').textContent = data.summary.riskySignIns;
+        const s = data.summary || {};
+        document.getElementById('totalSignins').textContent = s.total || 0;
+        document.getElementById('successSignins').textContent = s.successful || 0;
+        document.getElementById('blockedSignins').textContent = s.blocked || 0;
+        document.getElementById('caBlockedSignins').textContent = s.caBlocked || 0;
+        document.getElementById('mfaSignins').textContent = s.mfaRequired || 0;
+        document.getElementById('riskySignins').textContent = s.riskySignIns || 0;
         renderSignins(allSignins);
       } catch (e) {
-        document.getElementById('signinsTable').innerHTML = '<tr><td colspan="7" style="text-align:center;padding:40px;color:#d13438;">Error: ' + esc(e.message) + '<br><span style="font-size:11px;">Make sure AuditLog.Read.All permission is granted</span></td></tr>';
+        document.getElementById('signinsTable').innerHTML = '<tr><td colspan="7" style="text-align:center;padding:40px;color:#d13438;">Error: ' + esc(e.message) + '<br><br><span style="font-size:12px;color:#666;">Make sure AuditLog.Read.All permission is granted. Sign-in logs also require Azure AD Premium P1/P2 license.</span></td></tr>';
       }
     }
 

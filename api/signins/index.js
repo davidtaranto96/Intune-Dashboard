@@ -1,13 +1,14 @@
-const { graphRequestAllPages, graphRequest } = require('../graphClient');
+const { graphRequest } = require('../graphClient');
+const fetch = require('isomorphic-fetch');
 
 module.exports = async function (context, req) {
   try {
     const filter = req.query.filter || '';
-    const top = parseInt(req.query.top) || 200;
+    const top = parseInt(req.query.top) || 100;
     const search = req.query.search || '';
 
-    // Build the query - get recent sign-ins
-    let endpoint = `/auditLogs/signIns?$top=${Math.min(top, 500)}&$orderby=createdDateTime desc`;
+    // Build the query - get recent sign-ins (use v1.0, falls back to beta)
+    let endpoint = `/auditLogs/signIns?$top=${Math.min(top, 200)}&$orderby=createdDateTime desc`;
 
     // Add filters
     const filters = [];
