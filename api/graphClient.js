@@ -58,6 +58,11 @@ async function graphRequest(endpoint, method = 'GET', body = null) {
     throw new Error(`Graph API error: ${response.status} - ${error}`);
   }
 
+  // Some endpoints (like syncDevice) return 204 No Content
+  if (response.status === 204 || response.headers.get('content-length') === '0') {
+    return { success: true };
+  }
+
   return response.json();
 }
 

@@ -7,7 +7,7 @@ module.exports = async function (context, req) {
       '/deviceManagement/deviceCompliancePolicies'
     );
 
-    // Get policy assignments and status for each compliance policy
+    // Get policy assignments, status, and affected devices for each compliance policy
     const enrichedCompliance = await Promise.all(
       compliancePolicies.map(async (policy) => {
         let deviceStatuses = [];
@@ -15,9 +15,7 @@ module.exports = async function (context, req) {
           deviceStatuses = await graphRequestAllPages(
             `/deviceManagement/deviceCompliancePolicies/${policy.id}/deviceStatuses`
           );
-        } catch (e) {
-          // Some policies may not have device statuses
-        }
+        } catch (e) {}
 
         const statusSummary = {
           compliant: deviceStatuses.filter(s => s.status === 'compliant').length,
@@ -27,6 +25,17 @@ module.exports = async function (context, req) {
           notApplicable: deviceStatuses.filter(s => s.status === 'notApplicable').length
         };
 
+        // Include device-level details for drill-down
+        const deviceDetails = deviceStatuses
+          .filter(s => s.status !== 'notApplicable')
+          .map(s => ({
+            deviceName: s.deviceDisplayName,
+            status: s.status,
+            userPrincipalName: s.userPrincipalName,
+            lastReportedDateTime: s.lastReportedDateTime,
+            complianceGracePeriodExpirationDateTime: s.complianceGracePeriodExpirationDateTime
+          }));
+
         return {
           id: policy.id,
           displayName: policy.displayName,
@@ -35,7 +44,8 @@ module.exports = async function (context, req) {
           lastModifiedDateTime: policy.lastModifiedDateTime,
           type: 'compliance',
           platform: policy['@odata.type'] || 'unknown',
-          statusSummary
+          statusSummary,
+          deviceDetails
         };
       })
     );
@@ -60,9 +70,7 @@ module.exports = async function (context, req) {
         },
         grantControls: policy.grantControls
       }));
-    } catch (e) {
-      // May not have permissions for CA policies
-    }
+    } catch (e) {}
 
     // Get App Protection policies
     let appProtectionPolicies = [];
@@ -77,9 +85,7 @@ module.exports = async function (context, req) {
         ...iosAppProtection.map(p => ({ ...p, type: 'appProtection', platform: 'iOS' })),
         ...androidAppProtection.map(p => ({ ...p, type: 'appProtection', platform: 'Android' }))
       ];
-    } catch (e) {
-      // May not have permissions
-    }
+    } catch (e) {}
 
     const summary = {
       compliancePolicies: enrichedCompliance.length,
