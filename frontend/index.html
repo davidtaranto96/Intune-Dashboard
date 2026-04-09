@@ -9,14 +9,19 @@
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f0f2f5; color: #1a1a2e; }
 
-    .header { background: linear-gradient(135deg, #0078d4, #005a9e); color: white; padding: 16px 24px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 8px rgba(0,0,0,0.15); }
+    .header { background: linear-gradient(135deg, #0078d4, #005a9e); color: white; padding: 14px 24px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 8px rgba(0,0,0,0.15); }
     .header h1 { font-size: 20px; font-weight: 600; }
     .header .subtitle { font-size: 12px; opacity: 0.8; }
-    .header-actions { display: flex; gap: 12px; align-items: center; }
-    .header-actions button { background: rgba(255,255,255,0.15); color: white; border: 1px solid rgba(255,255,255,0.3); padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 13px; transition: background 0.2s; }
-    .header-actions button:hover { background: rgba(255,255,255,0.25); }
-    .user-info { font-size: 12px; opacity: 0.9; }
-    .last-updated { font-size: 11px; opacity: 0.7; }
+    .header-right { display: flex; gap: 16px; align-items: center; }
+    .user-badge { display: flex; align-items: center; gap: 8px; background: rgba(255,255,255,0.12); padding: 6px 14px; border-radius: 20px; }
+    .user-avatar { width: 28px; height: 28px; border-radius: 50%; background: rgba(255,255,255,0.25); display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 600; }
+    .user-badge .email { font-size: 12px; }
+    .refresh-btn { background: rgba(255,255,255,0.15); color: white; border: 1px solid rgba(255,255,255,0.3); width: 36px; height: 36px; border-radius: 50%; cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center; transition: background 0.2s; }
+    .refresh-btn:hover { background: rgba(255,255,255,0.25); }
+    .refresh-btn.spinning svg { animation: spin 0.8s linear infinite; }
+    .signout-btn { background: rgba(255,255,255,0.1); color: white; border: 1px solid rgba(255,255,255,0.2); padding: 6px 14px; border-radius: 6px; cursor: pointer; font-size: 12px; }
+    .signout-btn:hover { background: rgba(255,255,255,0.2); }
+    .last-updated { font-size: 10px; opacity: 0.6; }
 
     .tabs { display: flex; background: white; border-bottom: 2px solid #e0e0e0; padding: 0 24px; }
     .tab { padding: 12px 20px; cursor: pointer; font-size: 14px; font-weight: 500; color: #666; border-bottom: 3px solid transparent; transition: all 0.2s; }
@@ -27,10 +32,15 @@
     .tab-content { display: none; }
     .tab-content.active { display: block; }
 
-    .summary-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px; }
-    .card { background: white; border-radius: 10px; padding: 20px; box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
-    .card .label { font-size: 12px; color: #666; text-transform: uppercase; letter-spacing: 0.5px; }
-    .card .value { font-size: 32px; font-weight: 700; margin-top: 4px; }
+    /* Clickable summary cards */
+    .summary-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin-bottom: 24px; }
+    .card { background: white; border-radius: 10px; padding: 18px; box-shadow: 0 1px 4px rgba(0,0,0,0.08); transition: all 0.2s; position: relative; }
+    .card.clickable { cursor: pointer; }
+    .card.clickable:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.12); transform: translateY(-2px); }
+    .card.clickable.active-filter { outline: 3px solid #0078d4; outline-offset: -3px; }
+    .card.clickable.active-filter::after { content: ''; position: absolute; top: 8px; right: 8px; width: 8px; height: 8px; border-radius: 50%; background: #0078d4; }
+    .card .label { font-size: 11px; color: #666; text-transform: uppercase; letter-spacing: 0.5px; }
+    .card .value { font-size: 28px; font-weight: 700; margin-top: 4px; }
     .card .value.green { color: #107c10; }
     .card .value.red { color: #d13438; }
     .card .value.orange { color: #ff8c00; }
@@ -45,9 +55,15 @@
     .table-container { background: white; border-radius: 10px; box-shadow: 0 1px 4px rgba(0,0,0,0.08); overflow: hidden; }
     .table-header { padding: 16px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e0e0e0; flex-wrap: wrap; gap: 12px; }
     .table-header h3 { font-size: 16px; }
-    .search-box { padding: 8px 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 13px; width: 260px; }
+    .table-header .active-filter-label { font-size: 12px; color: #0078d4; font-weight: 500; }
+    .search-wrapper { position: relative; }
+    .search-wrapper svg { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: #999; }
+    .search-box { padding: 9px 12px 9px 34px; border: 1px solid #ddd; border-radius: 8px; font-size: 13px; width: 300px; transition: border-color 0.2s; }
+    .search-box:focus { outline: none; border-color: #0078d4; box-shadow: 0 0 0 3px rgba(0,120,212,0.1); }
     .filter-group { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
     .filter-select { padding: 8px 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 13px; background: white; }
+    .clear-filter-btn { background: #e8f0fe; color: #0078d4; border: none; padding: 8px 14px; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 500; display: none; }
+    .clear-filter-btn.show { display: inline-block; }
 
     table { width: 100%; border-collapse: collapse; }
     th { text-align: left; padding: 10px 16px; font-size: 12px; color: #666; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid #e0e0e0; background: #fafafa; }
@@ -56,11 +72,9 @@
 
     .badge { display: inline-block; padding: 4px 10px; border-radius: 12px; font-size: 11px; font-weight: 600; text-transform: uppercase; }
     .badge.compliant { background: #dff6dd; color: #107c10; }
-    .badge.noncompliant { background: #fde7e9; color: #d13438; }
-    .badge.nonCompliant { background: #fde7e9; color: #d13438; }
+    .badge.noncompliant, .badge.nonCompliant { background: #fde7e9; color: #d13438; }
     .badge.unknown { background: #f0f0f0; color: #666; }
-    .badge.grace { background: #fff4ce; color: #ff8c00; }
-    .badge.inGracePeriod { background: #fff4ce; color: #ff8c00; }
+    .badge.grace, .badge.inGracePeriod { background: #fff4ce; color: #ff8c00; }
     .badge.entra-only { background: #e8f0fe; color: #0078d4; }
     .badge.enabled { background: #dff6dd; color: #107c10; }
     .badge.disabled { background: #f0f0f0; color: #666; }
@@ -71,7 +85,7 @@
     .sync-btn:hover { background: #005a9e; }
     .sync-btn:disabled { background: #ccc; cursor: not-allowed; }
 
-    .violations { margin-top: 6px; }
+    .violations { margin-top: 4px; }
     .violation-tag { display: inline-block; background: #fde7e9; color: #d13438; padding: 2px 8px; border-radius: 4px; font-size: 10px; margin: 2px 2px 0 0; }
 
     .alerts-list { display: flex; flex-direction: column; gap: 12px; }
@@ -83,6 +97,20 @@
     .alert-detail { font-size: 12px; color: #666; margin-top: 4px; }
     .alert-count { font-size: 24px; font-weight: 700; }
 
+    /* Alert rules section */
+    .alert-rules { margin-top: 24px; }
+    .alert-rules h3 { margin-bottom: 16px; }
+    .alert-rule { background: white; border-radius: 10px; padding: 16px 20px; box-shadow: 0 1px 4px rgba(0,0,0,0.08); margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
+    .alert-rule .rule-info { flex: 1; }
+    .alert-rule .rule-name { font-weight: 600; font-size: 14px; }
+    .alert-rule .rule-desc { font-size: 12px; color: #666; margin-top: 2px; }
+    .toggle { position: relative; width: 44px; height: 24px; }
+    .toggle input { opacity: 0; width: 0; height: 0; }
+    .toggle .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background: #ccc; border-radius: 24px; transition: 0.3s; }
+    .toggle .slider:before { content: ''; position: absolute; height: 18px; width: 18px; left: 3px; bottom: 3px; background: white; border-radius: 50%; transition: 0.3s; }
+    .toggle input:checked + .slider { background: #0078d4; }
+    .toggle input:checked + .slider:before { transform: translateX(20px); }
+
     .loading { text-align: center; padding: 60px; color: #666; }
     .spinner { display: inline-block; width: 40px; height: 40px; border: 3px solid #e0e0e0; border-top-color: #0078d4; border-radius: 50%; animation: spin 0.8s linear infinite; }
     @keyframes spin { to { transform: rotate(360deg); } }
@@ -90,7 +118,6 @@
     .toast { position: fixed; bottom: 20px; right: 20px; background: #323232; color: white; padding: 12px 20px; border-radius: 8px; font-size: 13px; z-index: 1000; opacity: 0; transition: opacity 0.3s; }
     .toast.show { opacity: 1; }
 
-    /* Policy cards */
     .policy-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 16px; }
     .policy-card { background: white; border-radius: 10px; padding: 20px; box-shadow: 0 1px 4px rgba(0,0,0,0.08); cursor: pointer; transition: box-shadow 0.2s, transform 0.1s; }
     .policy-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.15); transform: translateY(-1px); }
@@ -101,7 +128,6 @@
     .policy-stat .num { font-size: 18px; font-weight: 700; }
     .policy-stat .lbl { font-size: 10px; color: #666; text-transform: uppercase; }
 
-    /* Policy detail modal */
     .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 999; justify-content: center; align-items: center; }
     .modal-overlay.show { display: flex; }
     .modal { background: white; border-radius: 12px; width: 90%; max-width: 900px; max-height: 80vh; overflow-y: auto; padding: 24px; box-shadow: 0 8px 32px rgba(0,0,0,0.3); }
@@ -117,7 +143,6 @@
     .modal-tab { padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 13px; background: #f0f0f0; border: none; }
     .modal-tab.active { background: #0078d4; color: white; }
 
-    /* Home page */
     .home-hero { background: white; border-radius: 12px; padding: 40px; margin-bottom: 24px; box-shadow: 0 1px 4px rgba(0,0,0,0.08); text-align: center; }
     .home-hero h2 { font-size: 28px; color: #0078d4; margin-bottom: 12px; }
     .home-hero p { font-size: 16px; color: #555; max-width: 700px; margin: 0 auto 24px; line-height: 1.6; }
@@ -131,6 +156,7 @@
       .charts-row { grid-template-columns: 1fr; }
       .header { flex-direction: column; gap: 12px; }
       .modal { width: 95%; padding: 16px; }
+      .search-box { width: 200px; }
     }
   </style>
 </head>
@@ -141,12 +167,18 @@
       <h1>Intune Compliance Dashboard</h1>
       <div class="subtitle">JBKnowledge - Device Management</div>
     </div>
-    <div class="header-actions">
-      <span class="user-info" id="userInfo"></span>
-      <span class="last-updated" id="lastUpdated">Not loaded</span>
-      <button onclick="refreshAll()">Refresh</button>
-      <button onclick="exportCSV('all')">Export CSV</button>
-      <button onclick="logout()">Sign Out</button>
+    <div class="header-right">
+      <span class="last-updated" id="lastUpdated"></span>
+      <button class="refresh-btn" id="refreshBtn" onclick="refreshAll()" title="Refresh data">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <path d="M1 1v5h5"/><path d="M1.5 5.5A7 7 0 1 1 1 8"/>
+        </svg>
+      </button>
+      <div class="user-badge">
+        <div class="user-avatar" id="userAvatar">?</div>
+        <span class="email" id="userEmail">Loading...</span>
+      </div>
+      <button class="signout-btn" onclick="logout()">Sign Out</button>
     </div>
   </div>
 
@@ -180,7 +212,7 @@
         <div class="feature-card">
           <div class="feature-icon">&#128680;</div>
           <h3>Alerts & Notifications</h3>
-          <p>Automatic alerts for non-compliant devices, stale devices that haven't synced, and devices in grace period requiring attention.</p>
+          <p>Configure alert rules for non-compliant devices, stale devices, and grace period expirations. Stay on top of compliance issues.</p>
         </div>
         <div class="feature-card">
           <div class="feature-icon">&#128200;</div>
@@ -188,8 +220,6 @@
           <p>Export detailed CSV reports filtered by compliance state, grace period, or recent enrollments. Download and share with your team.</p>
         </div>
       </div>
-
-      <!-- Quick stats on home -->
       <div class="summary-cards" style="margin-top:24px;">
         <div class="card"><div class="label">Total Devices</div><div class="value blue" id="homeTotal">-</div></div>
         <div class="card"><div class="label">Compliant</div><div class="value green" id="homeCompliant">-</div></div>
@@ -201,12 +231,12 @@
     <!-- DEVICES TAB -->
     <div id="devices" class="tab-content">
       <div class="summary-cards" id="deviceSummary">
-        <div class="card"><div class="label">Total Devices</div><div class="value blue" id="totalDevices">-</div></div>
-        <div class="card"><div class="label">Compliant</div><div class="value green" id="compliantDevices">-</div></div>
-        <div class="card"><div class="label">Non-Compliant</div><div class="value red" id="nonCompliantDevices">-</div></div>
-        <div class="card"><div class="label">Grace Period</div><div class="value orange" id="gracePeriodDevices">-</div></div>
-        <div class="card"><div class="label">Entra Only</div><div class="value gray" id="entraOnlyDevices">-</div></div>
-        <div class="card"><div class="label">Stale (7+ days)</div><div class="value red" id="staleDevices">-</div></div>
+        <div class="card clickable" data-filter="all" onclick="cardFilter('all')"><div class="label">Total Devices</div><div class="value blue" id="totalDevices">-</div></div>
+        <div class="card clickable" data-filter="compliant" onclick="cardFilter('compliant')"><div class="label">Compliant</div><div class="value green" id="compliantDevices">-</div></div>
+        <div class="card clickable" data-filter="noncompliant" onclick="cardFilter('noncompliant')"><div class="label">Non-Compliant</div><div class="value red" id="nonCompliantDevices">-</div></div>
+        <div class="card clickable" data-filter="grace_period" onclick="cardFilter('grace_period')"><div class="label">Grace Period</div><div class="value orange" id="gracePeriodDevices">-</div></div>
+        <div class="card clickable" data-filter="entra_only" onclick="cardFilter('entra_only')"><div class="label">Entra Only</div><div class="value gray" id="entraOnlyDevices">-</div></div>
+        <div class="card clickable" data-filter="stale" onclick="cardFilter('stale')"><div class="label">Stale (7+ days)</div><div class="value red" id="staleDevices">-</div></div>
       </div>
 
       <div class="charts-row">
@@ -222,16 +252,15 @@
 
       <div class="table-container">
         <div class="table-header">
-          <h3>All Devices</h3>
+          <div style="display:flex;align-items:center;gap:12px;">
+            <h3 id="tableTitle">All Devices</h3>
+            <button class="clear-filter-btn" id="clearFilterBtn" onclick="cardFilter('all')">Clear filter</button>
+          </div>
           <div class="filter-group">
-            <input type="text" class="search-box" id="deviceSearch" placeholder="Search devices..." oninput="filterDevices()">
-            <select class="filter-select" id="complianceFilter" onchange="filterDevices()">
-              <option value="all">All States</option>
-              <option value="compliant">Compliant</option>
-              <option value="noncompliant">Non-Compliant</option>
-              <option value="grace_period">Grace Period</option>
-              <option value="entra_only">Entra Only</option>
-            </select>
+            <div class="search-wrapper">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+              <input type="text" class="search-box" id="deviceSearch" placeholder="Search by name, user, or email..." oninput="filterDevices()">
+            </div>
             <select class="filter-select" id="osFilter" onchange="filterDevices()">
               <option value="all">All OS</option>
               <option value="Windows">Windows</option>
@@ -264,15 +293,13 @@
 
     <!-- POLICIES TAB -->
     <div id="policies" class="tab-content">
-      <div class="summary-cards" id="policySummary">
+      <div class="summary-cards">
         <div class="card"><div class="label">Compliance Policies</div><div class="value blue" id="compliancePolicyCount">-</div></div>
         <div class="card"><div class="label">Conditional Access</div><div class="value blue" id="caPolicyCount">-</div></div>
         <div class="card"><div class="label">App Protection</div><div class="value blue" id="appProtectionCount">-</div></div>
       </div>
-
       <h3 style="margin-bottom:16px;">Compliance Policies <span style="font-size:12px;color:#666;font-weight:normal;">(click to view device details)</span></h3>
       <div class="policy-grid" id="compliancePoliciesGrid"></div>
-
       <h3 style="margin:24px 0 16px;">Conditional Access Policies</h3>
       <div class="policy-grid" id="caPoliciesGrid"></div>
     </div>
@@ -285,26 +312,76 @@
         <div class="card"><div class="label">Info</div><div class="value blue" id="infoAlerts">-</div></div>
       </div>
       <div class="alerts-list" id="alertsList"></div>
+
+      <div class="alert-rules">
+        <h3>Alert Rules</h3>
+        <p style="font-size:13px;color:#666;margin-bottom:16px;">Configure which alerts are active. Enabled alerts will show in the dashboard when conditions are met.</p>
+
+        <div class="alert-rule">
+          <div class="rule-info">
+            <div class="rule-name">Non-Compliant Device Alert</div>
+            <div class="rule-desc">Alert when any device falls into non-compliant state</div>
+          </div>
+          <label class="toggle"><input type="checkbox" checked onchange="saveAlertRules()"><span class="slider"></span></label>
+        </div>
+
+        <div class="alert-rule">
+          <div class="rule-info">
+            <div class="rule-name">Stale Device Alert (7+ days)</div>
+            <div class="rule-desc">Alert when devices haven't synced in more than 7 days</div>
+          </div>
+          <label class="toggle"><input type="checkbox" checked onchange="saveAlertRules()"><span class="slider"></span></label>
+        </div>
+
+        <div class="alert-rule">
+          <div class="rule-info">
+            <div class="rule-name">Grace Period Expiring</div>
+            <div class="rule-desc">Alert when devices are in enrollment grace period</div>
+          </div>
+          <label class="toggle"><input type="checkbox" checked onchange="saveAlertRules()"><span class="slider"></span></label>
+        </div>
+
+        <div class="alert-rule">
+          <div class="rule-info">
+            <div class="rule-name">Encryption Not Enabled</div>
+            <div class="rule-desc">Alert when devices don't have encryption enabled</div>
+          </div>
+          <label class="toggle"><input type="checkbox" onchange="saveAlertRules()"><span class="slider"></span></label>
+        </div>
+
+        <div class="alert-rule">
+          <div class="rule-info">
+            <div class="rule-name">Stale Device Alert (30+ days)</div>
+            <div class="rule-desc">Alert for devices that haven't synced in over 30 days (potential abandoned devices)</div>
+          </div>
+          <label class="toggle"><input type="checkbox" onchange="saveAlertRules()"><span class="slider"></span></label>
+        </div>
+      </div>
     </div>
 
     <!-- REPORTS TAB -->
     <div id="reports" class="tab-content">
+      <h3 style="margin-bottom:16px;">Export Reports</h3>
       <div class="summary-cards">
-        <div class="card" style="cursor:pointer;" onclick="exportCSV('all')">
-          <div class="label">All Devices Report</div>
-          <div class="value blue" style="font-size:16px;">Download CSV</div>
+        <div class="card clickable" onclick="exportCSV('all')">
+          <div class="label">All Devices</div>
+          <div class="value blue" style="font-size:16px;">&#8615; Download CSV</div>
+          <div style="font-size:11px;color:#666;margin-top:4px;">Complete device inventory</div>
         </div>
-        <div class="card" style="cursor:pointer;" onclick="exportCSV('noncompliant')">
-          <div class="label">Non-Compliant Report</div>
-          <div class="value red" style="font-size:16px;">Download CSV</div>
+        <div class="card clickable" onclick="exportCSV('noncompliant')">
+          <div class="label">Non-Compliant</div>
+          <div class="value red" style="font-size:16px;">&#8615; Download CSV</div>
+          <div style="font-size:11px;color:#666;margin-top:4px;">Devices failing policies</div>
         </div>
-        <div class="card" style="cursor:pointer;" onclick="exportCSV('grace')">
-          <div class="label">Grace Period Report</div>
-          <div class="value orange" style="font-size:16px;">Download CSV</div>
+        <div class="card clickable" onclick="exportCSV('grace')">
+          <div class="label">Grace Period</div>
+          <div class="value orange" style="font-size:16px;">&#8615; Download CSV</div>
+          <div style="font-size:11px;color:#666;margin-top:4px;">Recently enrolled devices</div>
         </div>
-        <div class="card" style="cursor:pointer;" onclick="exportCSV('new')">
+        <div class="card clickable" onclick="exportCSV('new')">
           <div class="label">New Devices (30 days)</div>
-          <div class="value green" style="font-size:16px;">Download CSV</div>
+          <div class="value green" style="font-size:16px;">&#8615; Download CSV</div>
+          <div style="font-size:11px;color:#666;margin-top:4px;">Enrolled in last 30 days</div>
         </div>
       </div>
     </div>
@@ -322,15 +399,7 @@
       <div class="modal-tabs" id="modalTabs"></div>
       <div style="overflow-x:auto;">
         <table>
-          <thead>
-            <tr>
-              <th>Device Name</th>
-              <th>User</th>
-              <th>Status</th>
-              <th>Last Reported</th>
-              <th>Grace Expiry</th>
-            </tr>
-          </thead>
+          <thead><tr><th>Device Name</th><th>User</th><th>Status</th><th>Last Reported</th><th>Grace Expiry</th></tr></thead>
           <tbody id="modalDevices"></tbody>
         </table>
       </div>
@@ -344,24 +413,27 @@
     let allPolicies = {};
     let complianceChart = null;
     let osChart = null;
+    let activeCardFilter = 'all';
 
-    // Auth: get current user
+    // Auth
     async function loadUser() {
       try {
         const res = await fetch('/.auth/me');
         const data = await res.json();
         if (data.clientPrincipal) {
           const user = data.clientPrincipal;
-          document.getElementById('userInfo').textContent = user.userDetails || user.userId;
+          const email = user.userDetails || user.userId || '';
+          document.getElementById('userEmail').textContent = email;
+          document.getElementById('userAvatar').textContent = email.charAt(0).toUpperCase();
         }
-      } catch (e) {}
+      } catch (e) {
+        document.getElementById('userEmail').textContent = 'Not signed in';
+      }
     }
 
-    function logout() {
-      window.location.href = '/.auth/logout';
-    }
+    function logout() { window.location.href = '/.auth/logout'; }
 
-    // Tab switching
+    // Tabs
     document.querySelectorAll('.tab').forEach(tab => {
       tab.addEventListener('click', () => {
         document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
@@ -371,7 +443,44 @@
       });
     });
 
-    // Fetch devices
+    // Card filter (clickable summary cards)
+    function cardFilter(filter) {
+      activeCardFilter = filter;
+      // Update active card visual
+      document.querySelectorAll('#deviceSummary .card').forEach(c => {
+        c.classList.toggle('active-filter', c.dataset.filter === filter && filter !== 'all');
+      });
+      // Update table title and clear button
+      const titles = { all: 'All Devices', compliant: 'Compliant Devices', noncompliant: 'Non-Compliant Devices', grace_period: 'Grace Period Devices', entra_only: 'Entra Only Devices', stale: 'Stale Devices (7+ days)' };
+      document.getElementById('tableTitle').textContent = titles[filter] || 'All Devices';
+      document.getElementById('clearFilterBtn').classList.toggle('show', filter !== 'all');
+      filterDevices();
+    }
+
+    function filterDevices() {
+      const search = document.getElementById('deviceSearch').value.toLowerCase();
+      const os = document.getElementById('osFilter').value;
+
+      const filtered = allDevices.filter(d => {
+        const matchSearch = !search ||
+          (d.deviceName || '').toLowerCase().includes(search) ||
+          (d.userDisplayName || '').toLowerCase().includes(search) ||
+          (d.userPrincipalName || '').toLowerCase().includes(search);
+
+        let matchCard = true;
+        if (activeCardFilter === 'compliant') matchCard = d.complianceState === 'compliant';
+        else if (activeCardFilter === 'noncompliant') matchCard = d.complianceState === 'noncompliant';
+        else if (activeCardFilter === 'grace_period') matchCard = d.graceStatus === 'grace_period';
+        else if (activeCardFilter === 'entra_only') matchCard = d.complianceState === 'entra_only';
+        else if (activeCardFilter === 'stale') matchCard = d.daysSinceSync > 7;
+
+        const matchOs = os === 'all' || (d.operatingSystem || '').toLowerCase().includes(os.toLowerCase());
+        return matchSearch && matchCard && matchOs;
+      });
+
+      renderDevices(filtered);
+    }
+
     async function fetchDevices() {
       try {
         const res = await fetch('/api/devices');
@@ -381,7 +490,6 @@
         renderDevices(allDevices);
         renderCharts(data.summary);
         generateAlerts(allDevices);
-        // Update home stats
         document.getElementById('homeTotal').textContent = data.summary.total;
         document.getElementById('homeCompliant').textContent = data.summary.compliant;
         document.getElementById('homeNonCompliant').textContent = data.summary.nonCompliant;
@@ -398,8 +506,7 @@
         updatePolicySummary(allPolicies.summary);
         renderPolicies(allPolicies);
         document.getElementById('homePolicies').textContent =
-          (allPolicies.summary.compliancePolicies || 0) +
-          (allPolicies.summary.conditionalAccessPolicies || 0);
+          (allPolicies.summary.compliancePolicies || 0) + (allPolicies.summary.conditionalAccessPolicies || 0);
       } catch (e) {
         document.getElementById('compliancePoliciesGrid').innerHTML =
           '<div style="color:#d13438;">Error loading policies: ' + esc(e.message) + '</div>';
@@ -423,36 +530,22 @@
       document.getElementById('appProtectionCount').textContent = s.appProtectionPolicies;
     }
 
-    // Charts
     function renderCharts(summary) {
       if (!summary) return;
-
-      // Compliance pie chart
       const compData = summary.byCompliance || {};
       const compLabels = Object.keys(compData);
       const compValues = Object.values(compData);
       const compColors = compLabels.map(l =>
-        l === 'Compliant' ? '#107c10' :
-        l === 'Non-Compliant' ? '#d13438' :
-        l === 'Grace Period' ? '#ff8c00' :
-        l === 'Entra Only' ? '#0078d4' : '#999'
-      );
+        l === 'Compliant' ? '#107c10' : l === 'Non-Compliant' ? '#d13438' :
+        l === 'Grace Period' ? '#ff8c00' : l === 'Entra Only' ? '#0078d4' : '#999');
 
       if (complianceChart) complianceChart.destroy();
       complianceChart = new Chart(document.getElementById('complianceChart'), {
         type: 'doughnut',
-        data: {
-          labels: compLabels,
-          datasets: [{ data: compValues, backgroundColor: compColors, borderWidth: 2, borderColor: '#fff' }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: { legend: { position: 'right' } }
-        }
+        data: { labels: compLabels, datasets: [{ data: compValues, backgroundColor: compColors, borderWidth: 2, borderColor: '#fff' }] },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right' } } }
       });
 
-      // OS bar chart
       const osData = summary.byOS || {};
       const osLabels = Object.keys(osData);
       const osValues = Object.values(osData);
@@ -461,16 +554,8 @@
       if (osChart) osChart.destroy();
       osChart = new Chart(document.getElementById('osChart'), {
         type: 'bar',
-        data: {
-          labels: osLabels,
-          datasets: [{ label: 'Devices', data: osValues, backgroundColor: osColors.slice(0, osLabels.length), borderRadius: 6 }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: { legend: { display: false } },
-          scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
-        }
+        data: { labels: osLabels, datasets: [{ label: 'Devices', data: osValues, backgroundColor: osColors.slice(0, osLabels.length), borderRadius: 6 }] },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } } }
       });
     }
 
@@ -480,23 +565,18 @@
         tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:40px;">No devices found</td></tr>';
         return;
       }
-
       tbody.innerHTML = devices.map(d => {
         const badgeClass = d.graceStatus === 'grace_period' ? 'grace' :
           d.complianceState === 'compliant' ? 'compliant' :
           d.complianceState === 'noncompliant' ? 'noncompliant' :
           d.complianceState === 'entra_only' ? 'entra-only' : 'unknown';
-        const badgeText = d.graceStatus === 'grace_period' ? 'Grace Period' :
-          d.complianceState || 'Unknown';
+        const badgeText = d.graceStatus === 'grace_period' ? 'Grace Period' : d.complianceState || 'Unknown';
         const lastSync = d.lastSyncDateTime ? new Date(d.lastSyncDateTime).toLocaleDateString() : '-';
-
         let violationsHtml = '-';
         if (d.policyViolations && d.policyViolations.length > 0) {
           violationsHtml = d.policyViolations.map(v =>
-            '<span class="violation-tag">' + esc(v.policyName) + ' (' + v.status + ')</span>'
-          ).join('');
+            '<span class="violation-tag">' + esc(v.policyName) + ' (' + v.status + ')</span>').join('');
         }
-
         return '<tr>' +
           '<td><strong>' + esc(d.deviceName || 'Unknown') + '</strong><br><span style="font-size:11px;color:#666;">' + esc(d.model || '') + '</span></td>' +
           '<td>' + esc(d.userDisplayName || '-') + '<br><span style="font-size:11px;color:#666;">' + esc(d.userPrincipalName || '') + '</span></td>' +
@@ -510,10 +590,9 @@
     }
 
     function renderPolicies(data) {
-      // Compliance policies - clickable
       const compGrid = document.getElementById('compliancePoliciesGrid');
-      compGrid.innerHTML = (data.compliancePolicies || []).map((p, i) => {
-        return '<div class="policy-card" onclick="openPolicyDetail(' + i + ')">' +
+      compGrid.innerHTML = (data.compliancePolicies || []).map((p, i) =>
+        '<div class="policy-card" onclick="openPolicyDetail(' + i + ')">' +
           '<h4>' + esc(p.displayName) + '</h4>' +
           '<div class="meta">' + esc(p.description || 'No description') + '</div>' +
           '<div class="meta">Platform: ' + esc((p.platform || '').replace('#microsoft.graph.', '')) + '</div>' +
@@ -522,29 +601,22 @@
             '<div class="policy-stat"><div class="num" style="color:#d13438;">' + p.statusSummary.nonCompliant + '</div><div class="lbl">Non-Compliant</div></div>' +
             '<div class="policy-stat"><div class="num" style="color:#ff8c00;">' + p.statusSummary.inGracePeriod + '</div><div class="lbl">Grace</div></div>' +
             '<div class="policy-stat"><div class="num" style="color:#666;">' + p.statusSummary.error + '</div><div class="lbl">Error</div></div>' +
-          '</div>' +
-        '</div>';
-      }).join('') || '<div style="color:#666;">No compliance policies found</div>';
+          '</div></div>'
+      ).join('') || '<div style="color:#666;">No compliance policies found</div>';
 
-      // Conditional Access
       const caGrid = document.getElementById('caPoliciesGrid');
       caGrid.innerHTML = (data.conditionalAccessPolicies || []).map(p => {
         const stateClass = p.state === 'enabled' ? 'enabled' : p.state === 'disabled' ? 'disabled' : 'report-only';
-        return '<div class="policy-card" style="cursor:default;">' +
-          '<h4>' + esc(p.displayName) + '</h4>' +
-          '<div class="meta">State: <span class="badge ' + stateClass + '">' + p.state + '</span></div>' +
-        '</div>';
+        return '<div class="policy-card" style="cursor:default;"><h4>' + esc(p.displayName) + '</h4>' +
+          '<div class="meta">State: <span class="badge ' + stateClass + '">' + p.state + '</span></div></div>';
       }).join('') || '<div style="color:#666;">No conditional access policies found</div>';
     }
 
-    // Policy detail modal
     function openPolicyDetail(index) {
       const policy = allPolicies.compliancePolicies[index];
       if (!policy) return;
-
       document.getElementById('modalTitle').textContent = policy.displayName;
       document.getElementById('modalDescription').textContent = policy.description || 'No description';
-
       document.getElementById('modalStats').innerHTML =
         '<div class="modal-stat"><div class="num" style="color:#107c10;">' + policy.statusSummary.compliant + '</div><div class="lbl">Compliant</div></div>' +
         '<div class="modal-stat"><div class="num" style="color:#d13438;">' + policy.statusSummary.nonCompliant + '</div><div class="lbl">Non-Compliant</div></div>' +
@@ -552,38 +624,22 @@
         '<div class="modal-stat"><div class="num" style="color:#666;">' + policy.statusSummary.error + '</div><div class="lbl">Error</div></div>' +
         '<div class="modal-stat"><div class="num" style="color:#999;">' + policy.statusSummary.notApplicable + '</div><div class="lbl">N/A</div></div>';
 
-      // Filter tabs
       const details = policy.deviceDetails || [];
-      let currentFilter = 'all';
-
       function renderModalDevices(filter) {
-        currentFilter = filter;
         const filtered = filter === 'all' ? details :
-          filter === 'nonCompliant' ? details.filter(d => d.status === 'nonCompliant') :
-          filter === 'inGracePeriod' ? details.filter(d => d.status === 'inGracePeriod') :
-          filter === 'compliant' ? details.filter(d => d.status === 'compliant') :
-          filter === 'error' ? details.filter(d => d.status === 'error') : details;
-
+          details.filter(d => d.status === filter);
         document.getElementById('modalDevices').innerHTML = filtered.length === 0 ?
           '<tr><td colspan="5" style="text-align:center;padding:20px;color:#666;">No devices in this category</td></tr>' :
           filtered.map(d => {
-            const statusClass = d.status === 'compliant' ? 'compliant' :
-              d.status === 'nonCompliant' ? 'nonCompliant' :
-              d.status === 'inGracePeriod' ? 'inGracePeriod' :
-              d.status === 'error' ? 'error' : 'unknown';
-            return '<tr>' +
-              '<td><strong>' + esc(d.deviceName || '-') + '</strong></td>' +
+            const sc = d.status === 'compliant' ? 'compliant' : d.status === 'nonCompliant' ? 'nonCompliant' :
+              d.status === 'inGracePeriod' ? 'inGracePeriod' : d.status === 'error' ? 'error' : 'unknown';
+            return '<tr><td><strong>' + esc(d.deviceName || '-') + '</strong></td>' +
               '<td>' + esc(d.userPrincipalName || '-') + '</td>' +
-              '<td><span class="badge ' + statusClass + '">' + esc(d.status) + '</span></td>' +
+              '<td><span class="badge ' + sc + '">' + esc(d.status) + '</span></td>' +
               '<td>' + (d.lastReportedDateTime ? new Date(d.lastReportedDateTime).toLocaleDateString() : '-') + '</td>' +
-              '<td>' + (d.complianceGracePeriodExpirationDateTime ? new Date(d.complianceGracePeriodExpirationDateTime).toLocaleDateString() : '-') + '</td>' +
-            '</tr>';
+              '<td>' + (d.complianceGracePeriodExpirationDateTime ? new Date(d.complianceGracePeriodExpirationDateTime).toLocaleDateString() : '-') + '</td></tr>';
           }).join('');
-
-        // Update tab active state
-        document.querySelectorAll('.modal-tab').forEach(t => {
-          t.classList.toggle('active', t.dataset.filter === filter);
-        });
+        document.querySelectorAll('.modal-tab').forEach(t => t.classList.toggle('active', t.dataset.filter === filter));
       }
 
       document.getElementById('modalTabs').innerHTML =
@@ -592,42 +648,42 @@
             f === 'inGracePeriod' ? 'Grace Period' : f === 'compliant' ? 'Compliant' : 'Error';
           return '<button class="modal-tab" data-filter="' + f + '">' + label + '</button>';
         }).join('');
-
       document.querySelectorAll('.modal-tab').forEach(btn => {
         btn.addEventListener('click', () => renderModalDevices(btn.dataset.filter));
       });
-
       renderModalDevices('all');
       document.getElementById('policyModal').classList.add('show');
     }
 
-    function closeModal() {
-      document.getElementById('policyModal').classList.remove('show');
-    }
-
-    // Close modal on overlay click
-    document.getElementById('policyModal').addEventListener('click', function(e) {
-      if (e.target === this) closeModal();
-    });
+    function closeModal() { document.getElementById('policyModal').classList.remove('show'); }
+    document.getElementById('policyModal').addEventListener('click', function(e) { if (e.target === this) closeModal(); });
 
     function generateAlerts(devices) {
+      const rules = loadAlertRules();
       const alerts = [];
-      const nonCompliant = devices.filter(d => d.complianceState === 'noncompliant');
-      const stale = devices.filter(d => d.daysSinceSync > 7);
-      const grace = devices.filter(d => d.graceStatus === 'grace_period');
 
-      if (nonCompliant.length > 0) {
-        alerts.push({ level: 'critical', title: 'Non-Compliant Devices', detail: nonCompliant.length + ' device(s) are not compliant with policies', count: nonCompliant.length });
+      if (rules[0]) {
+        const nc = devices.filter(d => d.complianceState === 'noncompliant');
+        if (nc.length > 0) alerts.push({ level: 'critical', title: 'Non-Compliant Devices', detail: nc.length + ' device(s) are not compliant with policies', count: nc.length });
       }
-      if (stale.length > 0) {
-        alerts.push({ level: 'warning', title: 'Stale Devices', detail: stale.length + ' device(s) haven\'t synced in 7+ days', count: stale.length });
+      if (rules[1]) {
+        const stale = devices.filter(d => d.daysSinceSync > 7);
+        if (stale.length > 0) alerts.push({ level: 'warning', title: 'Stale Devices (7+ days)', detail: stale.length + ' device(s) haven\'t synced in 7+ days', count: stale.length });
       }
-      if (grace.length > 0) {
-        alerts.push({ level: 'info', title: 'Grace Period Devices', detail: grace.length + ' device(s) are within enrollment grace period', count: grace.length });
+      if (rules[2]) {
+        const grace = devices.filter(d => d.graceStatus === 'grace_period');
+        if (grace.length > 0) alerts.push({ level: 'info', title: 'Grace Period Devices', detail: grace.length + ' device(s) in enrollment grace period', count: grace.length });
       }
-      if (alerts.length === 0) {
-        alerts.push({ level: 'info', title: 'All Clear', detail: 'No compliance issues detected', count: 0 });
+      if (rules[3]) {
+        const noEncrypt = devices.filter(d => d.isEncrypted === false);
+        if (noEncrypt.length > 0) alerts.push({ level: 'warning', title: 'Encryption Not Enabled', detail: noEncrypt.length + ' device(s) without encryption', count: noEncrypt.length });
       }
+      if (rules[4]) {
+        const veryStale = devices.filter(d => d.daysSinceSync > 30);
+        if (veryStale.length > 0) alerts.push({ level: 'critical', title: 'Abandoned Devices (30+ days)', detail: veryStale.length + ' device(s) haven\'t synced in 30+ days', count: veryStale.length });
+      }
+
+      if (alerts.length === 0) alerts.push({ level: 'info', title: 'All Clear', detail: 'No compliance issues detected', count: 0 });
 
       document.getElementById('criticalAlerts').textContent = alerts.filter(a => a.level === 'critical').length;
       document.getElementById('warningAlerts').textContent = alerts.filter(a => a.level === 'warning').length;
@@ -641,38 +697,35 @@
       ).join('');
     }
 
-    function filterDevices() {
-      const search = document.getElementById('deviceSearch').value.toLowerCase();
-      const compliance = document.getElementById('complianceFilter').value;
-      const os = document.getElementById('osFilter').value;
+    // Alert rules persistence (localStorage)
+    function loadAlertRules() {
+      try {
+        const saved = localStorage.getItem('alertRules');
+        if (saved) {
+          const rules = JSON.parse(saved);
+          const toggles = document.querySelectorAll('.alert-rule .toggle input');
+          rules.forEach((v, i) => { if (toggles[i]) toggles[i].checked = v; });
+          return rules;
+        }
+      } catch (e) {}
+      return Array.from(document.querySelectorAll('.alert-rule .toggle input')).map(t => t.checked);
+    }
 
-      const filtered = allDevices.filter(d => {
-        const matchSearch = !search ||
-          (d.deviceName || '').toLowerCase().includes(search) ||
-          (d.userDisplayName || '').toLowerCase().includes(search) ||
-          (d.userPrincipalName || '').toLowerCase().includes(search);
-        const matchCompliance = compliance === 'all' ||
-          (compliance === 'grace_period' && d.graceStatus === 'grace_period') ||
-          d.complianceState === compliance;
-        const matchOs = os === 'all' || (d.operatingSystem || '').toLowerCase().includes(os.toLowerCase());
-        return matchSearch && matchCompliance && matchOs;
-      });
-
-      renderDevices(filtered);
+    function saveAlertRules() {
+      const rules = Array.from(document.querySelectorAll('.alert-rule .toggle input')).map(t => t.checked);
+      localStorage.setItem('alertRules', JSON.stringify(rules));
+      if (allDevices.length) generateAlerts(allDevices);
+      showToast('Alert rules saved');
     }
 
     async function syncDevice(deviceId, btn) {
-      btn.disabled = true;
-      btn.textContent = 'Syncing...';
+      btn.disabled = true; btn.textContent = 'Syncing...';
       try {
         const res = await fetch('/api/sync?deviceId=' + deviceId, { method: 'POST' });
         const data = await res.json();
         showToast(data.success ? 'Sync triggered successfully' : 'Sync failed: ' + (data.error || 'Unknown error'));
-      } catch (e) {
-        showToast('Sync error: ' + e.message);
-      }
-      btn.disabled = false;
-      btn.textContent = 'Sync';
+      } catch (e) { showToast('Sync error: ' + e.message); }
+      btn.disabled = false; btn.textContent = 'Sync';
     }
 
     async function exportCSV(type) {
@@ -687,9 +740,7 @@
         a.click();
         URL.revokeObjectURL(url);
         showToast('Report downloaded');
-      } catch (e) {
-        showToast('Export error: ' + e.message);
-      }
+      } catch (e) { showToast('Export error: ' + e.message); }
     }
 
     function showToast(msg) {
@@ -699,20 +750,20 @@
       setTimeout(() => toast.classList.remove('show'), 3000);
     }
 
-    function esc(str) {
-      const div = document.createElement('div');
-      div.textContent = str;
-      return div.innerHTML;
-    }
+    function esc(str) { const div = document.createElement('div'); div.textContent = str; return div.innerHTML; }
 
     async function refreshAll() {
+      const btn = document.getElementById('refreshBtn');
+      btn.classList.add('spinning');
       document.getElementById('lastUpdated').textContent = 'Loading...';
       await Promise.all([fetchDevices(), fetchPolicies()]);
-      document.getElementById('lastUpdated').textContent = 'Updated: ' + new Date().toLocaleTimeString();
+      document.getElementById('lastUpdated').textContent = new Date().toLocaleTimeString();
+      btn.classList.remove('spinning');
     }
 
     // Init
     loadUser();
+    loadAlertRules();
     refreshAll();
   </script>
 </body>
