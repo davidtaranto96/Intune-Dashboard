@@ -206,6 +206,18 @@
     .feature-card h3 { font-size: 16px; margin-bottom: 8px; color: #333; }
     .feature-card p { font-size: 13px; color: #666; line-height: 1.5; }
 
+    /* Report Builder */
+    .report-builder { background: white; border-radius: 10px; padding: 28px; box-shadow: 0 1px 4px rgba(0,0,0,0.08); max-width: 720px; }
+    .report-section { margin-bottom: 24px; }
+    .report-label { font-size: 12px; font-weight: 600; color: #555; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px; }
+    .report-options { display: flex; flex-wrap: wrap; gap: 10px; }
+    .report-option { display: flex; align-items: center; gap: 8px; padding: 10px 18px; border: 1.5px solid #ddd; border-radius: 8px; cursor: pointer; font-size: 13px; transition: all 0.15s; }
+    .report-option:has(input:checked) { border-color: #0078d4; background: #f0f7ff; color: #0078d4; font-weight: 500; }
+    .report-preview { background: #f8f9fa; border-radius: 8px; padding: 14px 18px; min-height: 48px; }
+    .signin-export-btn { background: #107c10; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 500; display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
+    .signin-export-btn:hover { background: #0a5e0a; }
+    .dash-section-title { font-size: 15px; font-weight: 600; color: #333; margin-bottom: 12px; margin-top: 8px; }
+
     @media (max-width: 768px) {
       .charts-row { grid-template-columns: 1fr; }
       .header { flex-direction: column; gap: 12px; }
@@ -292,7 +304,7 @@
     </div>
 
     <div class="tabs">
-      <div class="tab active" data-tab="home">Home</div>
+      <div class="tab active" data-tab="dashboard">Dashboard</div>
       <div class="tab" data-tab="devices">Devices</div>
       <div class="tab" data-tab="policies">Policies</div>
       <div class="tab" data-tab="signins">Sign-in Logs</div>
@@ -301,24 +313,22 @@
     </div>
 
     <div class="content">
-      <!-- HOME -->
-      <div id="home" class="tab-content active">
-        <div class="home-hero">
-          <h2>Welcome to the Intune Compliance Dashboard</h2>
-          <p>Monitor and manage device compliance across your organization. This dashboard provides real-time visibility into Microsoft Intune managed devices, compliance policies, and security posture for JBKnowledge.</p>
+      <!-- DASHBOARD -->
+      <div id="dashboard" class="tab-content active">
+        <div class="summary-cards">
+          <div class="card"><div class="label">Total Devices</div><div class="value blue" id="dashTotal">-</div></div>
+          <div class="card"><div class="label">Compliant</div><div class="value green" id="dashCompliant">-</div></div>
+          <div class="card"><div class="label">Non-Compliant</div><div class="value red" id="dashNonCompliant">-</div></div>
+          <div class="card"><div class="label">Grace Period</div><div class="value orange" id="dashGrace">-</div></div>
+          <div class="card"><div class="label">Active Policies</div><div class="value blue" id="dashPolicies">-</div></div>
+          <div class="card"><div class="label">Stale (7+ days)</div><div class="value red" id="dashStale">-</div></div>
         </div>
-        <div class="features-grid">
-          <div class="feature-card"><div class="feature-icon">&#128187;</div><h3>Device Monitoring</h3><p>View all managed devices across Windows, iOS, Android, and macOS. Track compliance state, last sync time, and enrollment status.</p></div>
-          <div class="feature-card"><div class="feature-icon">&#128203;</div><h3>Policy Compliance</h3><p>Review and edit compliance policies and conditional access rules. Click any policy to see device-level status and make changes.</p></div>
-          <div class="feature-card"><div class="feature-icon">&#128273;</div><h3>Sign-in Logs</h3><p>Review recent sign-in attempts, see which conditional access policies were applied, and identify blocked logins.</p></div>
-          <div class="feature-card"><div class="feature-icon">&#128200;</div><h3>Reports & Export</h3><p>Export detailed CSV reports filtered by compliance state, grace period, or recent enrollments.</p></div>
+        <div class="charts-row">
+          <div class="chart-card"><h3>Compliance Status</h3><div class="chart-container"><canvas id="complianceChart"></canvas></div></div>
+          <div class="chart-card"><h3>Devices by OS</h3><div class="chart-container"><canvas id="osChart"></canvas></div></div>
         </div>
-        <div class="summary-cards" style="margin-top:24px;">
-          <div class="card"><div class="label">Total Devices</div><div class="value blue" id="homeTotal">-</div></div>
-          <div class="card"><div class="label">Compliant</div><div class="value green" id="homeCompliant">-</div></div>
-          <div class="card"><div class="label">Non-Compliant</div><div class="value red" id="homeNonCompliant">-</div></div>
-          <div class="card"><div class="label">Policies</div><div class="value blue" id="homePolicies">-</div></div>
-        </div>
+        <div class="dash-section-title">Recent Alerts</div>
+        <div class="alerts-list" id="dashAlertsList"><div style="color:#888;font-size:13px;padding:12px;">Loading alerts...</div></div>
       </div>
 
       <!-- DEVICES -->
@@ -330,10 +340,6 @@
           <div class="card clickable" data-filter="grace_period" onclick="cardFilter('grace_period')"><div class="label">Grace Period</div><div class="value orange" id="gracePeriodDevices">-</div></div>
           <div class="card clickable" data-filter="entra_only" onclick="cardFilter('entra_only')"><div class="label">Entra Only</div><div class="value gray" id="entraOnlyDevices">-</div></div>
           <div class="card clickable" data-filter="stale" onclick="cardFilter('stale')"><div class="label">Stale (7+ days)</div><div class="value red" id="staleDevices">-</div></div>
-        </div>
-        <div class="charts-row">
-          <div class="chart-card"><h3>Compliance Status</h3><div class="chart-container"><canvas id="complianceChart"></canvas></div></div>
-          <div class="chart-card"><h3>Devices by OS</h3><div class="chart-container"><canvas id="osChart"></canvas></div></div>
         </div>
         <div class="table-container">
           <div class="table-header">
@@ -400,6 +406,20 @@
                 <option value="ca_failure">CA Blocked</option>
                 <option value="mfa_required">MFA Required</option>
               </select>
+              <select class="filter-select" id="signinCountry" onchange="filterSignins()">
+                <option value="">All Countries</option>
+              </select>
+              <select class="filter-select" id="signinRisk" onchange="filterSignins()">
+                <option value="">All Risk Levels</option>
+                <option value="none">No Risk</option>
+                <option value="low">Low Risk</option>
+                <option value="medium">Medium Risk</option>
+                <option value="high">High Risk</option>
+              </select>
+              <label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer;white-space:nowrap;">
+                <input type="checkbox" id="signinOutsideCountry" onchange="filterSignins()"> Outside selected country
+              </label>
+              <button class="signin-export-btn" onclick="exportSigninsCSV()">&#8615; Export CSV</button>
             </div>
           </div>
           <div style="overflow-x:auto;">
@@ -430,12 +450,39 @@
 
       <!-- REPORTS -->
       <div id="reports" class="tab-content">
-        <h3 style="margin-bottom:16px;">Export Reports</h3>
-        <div class="summary-cards">
-          <div class="card clickable" onclick="exportCSV('all')"><div class="label">All Devices</div><div class="value blue" style="font-size:16px;">&#8615; Download CSV</div><div style="font-size:11px;color:#666;margin-top:4px;">Complete device inventory</div></div>
-          <div class="card clickable" onclick="exportCSV('noncompliant')"><div class="label">Non-Compliant</div><div class="value red" style="font-size:16px;">&#8615; Download CSV</div><div style="font-size:11px;color:#666;margin-top:4px;">Devices failing policies</div></div>
-          <div class="card clickable" onclick="exportCSV('grace')"><div class="label">Grace Period</div><div class="value orange" style="font-size:16px;">&#8615; Download CSV</div><div style="font-size:11px;color:#666;margin-top:4px;">Recently enrolled devices</div></div>
-          <div class="card clickable" onclick="exportCSV('new')"><div class="label">New Devices (30 days)</div><div class="value green" style="font-size:16px;">&#8615; Download CSV</div><div style="font-size:11px;color:#666;margin-top:4px;">Enrolled in last 30 days</div></div>
+        <div class="report-builder">
+          <h3 style="margin-bottom:24px;">Generate Report</h3>
+          <div class="report-section">
+            <div class="report-label">1. Report Type</div>
+            <div class="report-options">
+              <label class="report-option"><input type="radio" name="reportType" value="devices" checked onchange="updateReportOptions()"> &#128187; Devices</label>
+              <label class="report-option"><input type="radio" name="reportType" value="policies" onchange="updateReportOptions()"> &#128203; Policies</label>
+              <label class="report-option"><input type="radio" name="reportType" value="signins" onchange="updateReportOptions()"> &#128273; Sign-in Logs</label>
+            </div>
+          </div>
+          <div class="report-section" id="deviceReportFilters">
+            <div class="report-label">2. Compliance Filter</div>
+            <div class="report-options">
+              <label class="report-option"><input type="radio" name="deviceFilter" value="all" checked onchange="updateReportPreview()"> All Devices</label>
+              <label class="report-option"><input type="radio" name="deviceFilter" value="noncompliant" onchange="updateReportPreview()"> Non-Compliant Only</label>
+              <label class="report-option"><input type="radio" name="deviceFilter" value="grace" onchange="updateReportPreview()"> Grace Period Only</label>
+              <label class="report-option"><input type="radio" name="deviceFilter" value="new" onchange="updateReportPreview()"> New (Last 30 days)</label>
+            </div>
+          </div>
+          <div class="report-section" id="signinReportFilters" style="display:none;">
+            <div class="report-label">2. Sign-in Filter</div>
+            <div class="report-options">
+              <label class="report-option"><input type="radio" name="signinReportFilter" value="all" checked onchange="updateReportPreview()"> All Sign-ins</label>
+              <label class="report-option"><input type="radio" name="signinReportFilter" value="blocked" onchange="updateReportPreview()"> Blocked Only</label>
+              <label class="report-option"><input type="radio" name="signinReportFilter" value="success" onchange="updateReportPreview()"> Successful Only</label>
+              <label class="report-option"><input type="radio" name="signinReportFilter" value="ca_failure" onchange="updateReportPreview()"> CA Blocked</label>
+            </div>
+          </div>
+          <div class="report-section">
+            <div class="report-label">Report Preview</div>
+            <div class="report-preview" id="reportPreview"><span style="color:#888;font-size:13px;">All devices — CSV with compliance state, OS, last sync, and policy violations.</span></div>
+          </div>
+          <button class="btn-primary" style="padding:12px 32px;font-size:14px;" onclick="downloadReport()">&#8615; Download Report</button>
         </div>
       </div>
     </div>
@@ -537,9 +584,11 @@
         renderDevices(allDevices);
         renderCharts(data.summary);
         generateAlerts(allDevices);
-        document.getElementById('homeTotal').textContent = data.summary.total;
-        document.getElementById('homeCompliant').textContent = data.summary.compliant;
-        document.getElementById('homeNonCompliant').textContent = data.summary.nonCompliant;
+        document.getElementById('dashTotal').textContent = data.summary.total;
+        document.getElementById('dashCompliant').textContent = data.summary.compliant;
+        document.getElementById('dashNonCompliant').textContent = data.summary.nonCompliant;
+        document.getElementById('dashGrace').textContent = data.summary.inGracePeriod;
+        document.getElementById('dashStale').textContent = data.summary.notSyncedIn7Days;
       } catch (e) {
         document.getElementById('devicesTable').innerHTML = '<tr><td colspan="7" style="text-align:center;padding:40px;color:#d13438;">Error: ' + esc(e.message) + '</td></tr>';
       }
@@ -551,7 +600,7 @@
         allPolicies = await res.json();
         updatePolicySummary(allPolicies.summary);
         renderPolicies(allPolicies);
-        document.getElementById('homePolicies').textContent = (allPolicies.summary.compliancePolicies || 0) + (allPolicies.summary.conditionalAccessPolicies || 0);
+        document.getElementById('dashPolicies').textContent = (allPolicies.summary.compliancePolicies || 0) + (allPolicies.summary.conditionalAccessPolicies || 0);
       } catch (e) {
         document.getElementById('compliancePoliciesGrid').innerHTML = '<div style="color:#d13438;">Error: ' + esc(e.message) + '</div>';
       }
@@ -572,6 +621,7 @@
           return;
         }
         allSignins = data.signIns || [];
+        populateCountryFilter(allSignins);
         const s = data.summary || {};
         document.getElementById('totalSignins').textContent = s.total || 0;
         document.getElementById('successSignins').textContent = s.successful || 0;
@@ -587,7 +637,19 @@
 
     function filterSignins() {
       const search = document.getElementById('signinSearch').value.toLowerCase();
-      const filtered = allSignins.filter(s => !search || (s.userDisplayName || '').toLowerCase().includes(search) || (s.userPrincipalName || '').toLowerCase().includes(search));
+      const country = document.getElementById('signinCountry').value;
+      const risk = document.getElementById('signinRisk').value;
+      const outside = document.getElementById('signinOutsideCountry').checked;
+      const filtered = allSignins.filter(s => {
+        const matchSearch = !search || (s.userDisplayName || '').toLowerCase().includes(search) || (s.userPrincipalName || '').toLowerCase().includes(search);
+        let matchCountry = true;
+        if (country) {
+          const sc = (s.location && s.location.countryOrRegion) || '';
+          matchCountry = outside ? sc !== country : sc === country;
+        }
+        const matchRisk = !risk || s.riskLevel === risk;
+        return matchSearch && matchCountry && matchRisk;
+      });
       renderSignins(filtered);
     }
 
@@ -790,7 +852,10 @@
       document.getElementById('criticalAlerts').textContent = alerts.filter(a => a.level === 'critical').length;
       document.getElementById('warningAlerts').textContent = alerts.filter(a => a.level === 'warning').length;
       document.getElementById('infoAlerts').textContent = alerts.filter(a => a.level === 'info').length;
-      document.getElementById('alertsList').innerHTML = alerts.map(a => '<div class="alert-item ' + a.level + '"><div><div class="alert-title">' + a.title + '</div><div class="alert-detail">' + a.detail + '</div></div>' + (a.count ? '<div class="alert-count">' + a.count + '</div>' : '') + '</div>').join('');
+      const alertHtml = alerts.map(a => '<div class="alert-item ' + a.level + '"><div><div class="alert-title">' + a.title + '</div><div class="alert-detail">' + a.detail + '</div></div>' + (a.count ? '<div class="alert-count">' + a.count + '</div>' : '') + '</div>').join('');
+      document.getElementById('alertsList').innerHTML = alertHtml;
+      const dashAlertsEl = document.getElementById('dashAlertsList');
+      if (dashAlertsEl) dashAlertsEl.innerHTML = alertHtml;
     }
 
     function loadAlertRules() { try { const s = localStorage.getItem('alertRules'); if (s) { const r = JSON.parse(s); document.querySelectorAll('.alert-rule .toggle input').forEach((t,i) => { if (r[i] !== undefined) t.checked = r[i]; }); return r; } } catch(e){} return Array.from(document.querySelectorAll('.alert-rule .toggle input')).map(t => t.checked); }
@@ -799,6 +864,88 @@
     async function syncDevice(id, btn) { btn.disabled = true; btn.textContent = 'Syncing...'; try { const r = await fetch('/api/sync?deviceId=' + id, { method: 'POST' }); const d = await r.json(); showToast(d.success ? 'Sync triggered' : 'Error: ' + (d.error||'Unknown')); } catch(e) { showToast('Error: ' + e.message); } btn.disabled = false; btn.textContent = 'Sync'; }
 
     async function exportCSV(type) { showToast('Generating...'); try { const r = await fetch('/api/reports?type=' + type + '&format=csv'); const b = await r.blob(); const u = URL.createObjectURL(b); const a = document.createElement('a'); a.href = u; a.download = 'intune-' + type + '-' + new Date().toISOString().split('T')[0] + '.csv'; a.click(); URL.revokeObjectURL(u); showToast('Downloaded'); } catch(e) { showToast('Error: ' + e.message); } }
+
+    function populateCountryFilter(signins) {
+      const countries = [...new Set(signins.map(s => s.location && s.location.countryOrRegion).filter(Boolean))].sort();
+      const sel = document.getElementById('signinCountry');
+      sel.innerHTML = '<option value="">All Countries</option>' + countries.map(c => '<option value="' + esc(c) + '">' + esc(c) + '</option>').join('');
+    }
+
+    function exportSigninsCSV() {
+      const search = document.getElementById('signinSearch').value.toLowerCase();
+      const country = document.getElementById('signinCountry').value;
+      const risk = document.getElementById('signinRisk').value;
+      const outside = document.getElementById('signinOutsideCountry').checked;
+      const filtered = allSignins.filter(s => {
+        const matchSearch = !search || (s.userDisplayName || '').toLowerCase().includes(search) || (s.userPrincipalName || '').toLowerCase().includes(search);
+        let matchCountry = true;
+        if (country) { const sc = (s.location && s.location.countryOrRegion) || ''; matchCountry = outside ? sc !== country : sc === country; }
+        return matchSearch && matchCountry && (!risk || s.riskLevel === risk);
+      });
+      if (!filtered.length) { showToast('No sign-ins to export'); return; }
+      const hdrs = ['DateTime','User','UPN','App','Status','FailureReason','Country','City','IP','Device','Browser','RiskLevel','CAStatus'];
+      const rows = filtered.map(s => [s.createdDateTime,s.userDisplayName,s.userPrincipalName,s.appDisplayName,s.isBlocked?'Blocked':'Success',(s.status&&s.status.failureReason)||'',(s.location&&s.location.countryOrRegion)||'',(s.location&&s.location.city)||'',s.ipAddress||'',(s.deviceDetail&&s.deviceDetail.operatingSystem)||'',(s.deviceDetail&&s.deviceDetail.browser)||'',s.riskLevel||'none',s.conditionalAccessStatus||''].map(v => '"' + String(v).replace(/"/g, '""') + '"').join(','));
+      const blob = new Blob([[hdrs.join(','), ...rows].join('\n')], {type:'text/csv'});
+      const u = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = u; a.download = 'signin-logs-' + new Date().toISOString().split('T')[0] + '.csv'; a.click(); URL.revokeObjectURL(u);
+      showToast('Exported ' + filtered.length + ' records');
+    }
+
+    function updateReportOptions() {
+      const type = document.querySelector('input[name="reportType"]:checked').value;
+      document.getElementById('deviceReportFilters').style.display = type === 'devices' ? 'block' : 'none';
+      document.getElementById('signinReportFilters').style.display = type === 'signins' ? 'block' : 'none';
+      updateReportPreview();
+    }
+
+    function updateReportPreview() {
+      const type = document.querySelector('input[name="reportType"]:checked').value;
+      let desc = '';
+      if (type === 'devices') {
+        const f = document.querySelector('input[name="deviceFilter"]:checked').value;
+        const labels = {all:'All devices',noncompliant:'Non-compliant devices',grace:'Grace period devices',new:'Devices enrolled in last 30 days'};
+        desc = labels[f] + ' — CSV with compliance state, OS, last sync, and policy violations.';
+      } else if (type === 'policies') {
+        desc = 'All compliance and conditional access policies — CSV export with state, platform, and device counts.';
+      } else {
+        const f = document.querySelector('input[name="signinReportFilter"]:checked').value;
+        const labels = {all:'All sign-ins',blocked:'Blocked sign-ins only',success:'Successful sign-ins only',ca_failure:'CA-blocked sign-ins only'};
+        desc = labels[f] + ' — CSV with user, location, device, risk level, and CA policies.';
+      }
+      document.getElementById('reportPreview').innerHTML = '<span style="color:#555;font-size:13px;">' + esc(desc) + '</span>';
+    }
+
+    async function downloadReport() {
+      const type = document.querySelector('input[name="reportType"]:checked').value;
+      if (type === 'devices') {
+        const f = document.querySelector('input[name="deviceFilter"]:checked').value;
+        await exportCSV(f);
+      } else if (type === 'policies') {
+        if (!allPolicies.compliancePolicies) { showToast('Load the Policies tab first'); return; }
+        const hdrs = ['Name','Type','Platform','State','Compliant','NonCompliant','GracePeriod'];
+        const rows = [
+          ...(allPolicies.compliancePolicies||[]).map(p => [p.displayName,'Compliance',p.platform||'','',p.statusSummary.compliant,p.statusSummary.nonCompliant,p.statusSummary.inGracePeriod]),
+          ...(allPolicies.conditionalAccessPolicies||[]).map(p => [p.displayName,'Conditional Access','',p.state,'','',''])
+        ].map(r => r.map(v => '"' + String(v||'').replace(/"/g,'""') + '"').join(','));
+        const blob = new Blob([[hdrs.join(','), ...rows].join('\n')], {type:'text/csv'});
+        const u = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = u; a.download = 'policies-' + new Date().toISOString().split('T')[0] + '.csv'; a.click(); URL.revokeObjectURL(u);
+        showToast('Downloaded policy report');
+      } else {
+        const f = document.querySelector('input[name="signinReportFilter"]:checked').value;
+        showToast('Fetching sign-in data...');
+        try {
+          const res = await fetch('/api/signins?filter=' + f + '&top=200');
+          const data = await res.json();
+          if (data.error) { showToast('Error: ' + data.error.substring(0,100)); return; }
+          const signins = data.signIns || [];
+          if (!signins.length) { showToast('No sign-ins found'); return; }
+          const hdrs = ['DateTime','User','UPN','App','Status','FailureReason','Country','City','IP','Device','Browser','RiskLevel','CAStatus'];
+          const rows = signins.map(s => [s.createdDateTime,s.userDisplayName,s.userPrincipalName,s.appDisplayName,s.isBlocked?'Blocked':'Success',(s.status&&s.status.failureReason)||'',(s.location&&s.location.countryOrRegion)||'',(s.location&&s.location.city)||'',s.ipAddress||'',(s.deviceDetail&&s.deviceDetail.operatingSystem)||'',(s.deviceDetail&&s.deviceDetail.browser)||'',s.riskLevel||'none',s.conditionalAccessStatus||''].map(v => '"' + String(v||'').replace(/"/g,'""') + '"').join(','));
+          const blob = new Blob([[hdrs.join(','), ...rows].join('\n')], {type:'text/csv'});
+          const u = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = u; a.download = 'signin-report-' + f + '-' + new Date().toISOString().split('T')[0] + '.csv'; a.click(); URL.revokeObjectURL(u);
+          showToast('Downloaded ' + signins.length + ' sign-in records');
+        } catch(e) { showToast('Error: ' + e.message); }
+      }
+    }
 
     function showToast(m) { const t = document.getElementById('toast'); t.textContent = m; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 3000); }
     function esc(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
