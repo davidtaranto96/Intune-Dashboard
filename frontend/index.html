@@ -329,6 +329,27 @@
         </div>
         <div class="dash-section-title">Recent Alerts</div>
         <div class="alerts-list" id="dashAlertsList"><div style="color:#888;font-size:13px;padding:12px;">Loading alerts...</div></div>
+
+        <div class="dash-section-title" style="margin-top:28px;">User Enrollment Coverage</div>
+        <div class="summary-cards" style="margin-bottom:16px;">
+          <div class="card"><div class="label">Total Entra Users</div><div class="value blue" id="dashUsersTotal">-</div></div>
+          <div class="card"><div class="label">Enrolled in Intune</div><div class="value green" id="dashUsersEnrolled">-</div></div>
+          <div class="card"><div class="label">Not Enrolled</div><div class="value red" id="dashUsersNotEnrolled">-</div></div>
+          <div class="card"><div class="label">Coverage</div><div class="value blue" id="dashCoverage">-</div></div>
+          <div class="card"><div class="label">Unassigned Devices</div><div class="value gray" id="dashUnassigned">-</div></div>
+        </div>
+        <div class="table-container">
+          <div class="table-header">
+            <div>
+              <h3>Users Without Intune Device</h3>
+              <div style="font-size:12px;color:#666;margin-top:2px;">Entra ID accounts with no managed device — may be personal devices or pending onboarding</div>
+            </div>
+          </div>
+          <div style="overflow-x:auto;">
+            <table><thead><tr><th>User</th><th>Email / UPN</th><th>Status</th></tr></thead>
+            <tbody id="notEnrolledTable"><tr><td colspan="3" class="loading"><div class="spinner"></div><br>Loading user coverage...</td></tr></tbody></table>
+          </div>
+        </div>
       </div>
 
       <!-- DEVICES -->
@@ -865,6 +886,36 @@
 
     async function exportCSV(type) { showToast('Generating...'); try { const r = await fetch('/api/reports?type=' + type + '&format=csv'); const b = await r.blob(); const u = URL.createObjectURL(b); const a = document.createElement('a'); a.href = u; a.download = 'intune-' + type + '-' + new Date().toISOString().split('T')[0] + '.csv'; a.click(); URL.revokeObjectURL(u); showToast('Downloaded'); } catch(e) { showToast('Error: ' + e.message); } }
 
+    async function fetchUserCoverage() {
+      try {
+        const res = await fetch('/api/users');
+        const data = await res.json();
+        if (data.error) {
+          document.getElementById('notEnrolledTable').innerHTML = '<tr><td colspan="3" style="text-align:center;padding:20px;color:#d13438;">Error: ' + esc(data.error.substring(0, 200)) + '<br><br><span style="font-size:12px;color:#666;">Make sure User.Read.All permission is granted with admin consent in your App Registration.</span></td></tr>';
+          return;
+        }
+        const s = data.summary || {};
+        document.getElementById('dashUsersTotal').textContent = s.total || 0;
+        document.getElementById('dashUsersEnrolled').textContent = s.withDevices || 0;
+        document.getElementById('dashUsersNotEnrolled').textContent = s.withoutDevices || 0;
+        document.getElementById('dashCoverage').textContent = (s.coveragePercent || 0) + '%';
+        document.getElementById('dashUnassigned').textContent = s.unassignedDevices || 0;
+
+        const notEnrolled = data.usersWithoutDevices || [];
+        if (!notEnrolled.length) {
+          document.getElementById('notEnrolledTable').innerHTML = '<tr><td colspan="3" style="text-align:center;padding:20px;color:#107c10;">All users have at least one enrolled device.</td></tr>';
+          return;
+        }
+        document.getElementById('notEnrolledTable').innerHTML = notEnrolled.map(u =>
+          '<tr><td><strong>' + esc(u.displayName || '-') + '</strong></td>' +
+          '<td style="color:#666;font-size:12px;">' + esc(u.userPrincipalName || '-') + '</td>' +
+          '<td><span class="badge" style="background:#fff4ce;color:#ff8c00;">Not Enrolled</span></td></tr>'
+        ).join('');
+      } catch (e) {
+        document.getElementById('notEnrolledTable').innerHTML = '<tr><td colspan="3" style="text-align:center;padding:20px;color:#d13438;">Error: ' + esc(e.message) + '</td></tr>';
+      }
+    }
+
     function populateCountryFilter(signins) {
       const countries = [...new Set(signins.map(s => s.location && s.location.countryOrRegion).filter(Boolean))].sort();
       const sel = document.getElementById('signinCountry');
@@ -953,7 +1004,7 @@
     async function refreshAll() {
       const btn = document.getElementById('refreshBtn'); btn.classList.add('spinning');
       document.getElementById('lastUpdated').textContent = 'Loading...';
-      await Promise.all([fetchDevices(), fetchPolicies()]);
+      await Promise.all([fetchDevices(), fetchPolicies(), fetchUserCoverage()]);
       document.getElementById('lastUpdated').textContent = new Date().toLocaleTimeString();
       btn.classList.remove('spinning');
     }
