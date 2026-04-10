@@ -642,6 +642,7 @@
         tab.classList.add('active');
         document.getElementById(tab.dataset.tab).classList.add('active');
         if (tab.dataset.tab === 'signins' && allSignins.length === 0) fetchSignins();
+        if (tab.dataset.tab === 'dashboard' && lastSummary) setTimeout(() => renderCharts(lastSummary), 50);
       });
     });
 
@@ -1053,7 +1054,24 @@
     function loadAlertRules() { try { const s = localStorage.getItem('alertRules'); if (s) { const r = JSON.parse(s); document.querySelectorAll('.alert-rule .toggle input').forEach((t,i) => { if (r[i] !== undefined) t.checked = r[i]; }); return r; } } catch(e){} return Array.from(document.querySelectorAll('.alert-rule .toggle input')).map(t => t.checked); }
     function saveAlertRules() { const r = Array.from(document.querySelectorAll('.alert-rule .toggle input')).map(t => t.checked); localStorage.setItem('alertRules', JSON.stringify(r)); if (allDevices.length) generateAlerts(allDevices); showToast('Alert rules saved'); }
 
-    async function syncDevice(id, btn) { btn.disabled = true; btn.textContent = 'Syncing...'; try { const r = await fetch('/api/sync?deviceId=' + id, { method: 'POST' }); const d = await r.json(); showToast(d.success ? 'Sync triggered' : 'Error: ' + (d.error||'Unknown')); } catch(e) { showToast('Error: ' + e.message); } btn.disabled = false; btn.textContent = 'Sync'; }
+    async function syncDevice(id, btn) {
+      btn.disabled = true; btn.textContent = 'Syncing...';
+      try {
+        const r = await fetch('/api/sync?deviceId=' + id, { method: 'POST' });
+        const d = await r.json();
+        if (d.success) {
+          showToast('Sync triggered successfully');
+        } else {
+          const err = d.error || '';
+          if (err.includes('PrivilegedOperations') || err.includes('403') || err.includes('Forbidden')) {
+            showToast('Sync requires DeviceManagementManagedDevices.PrivilegedOperations.All permission. Add it in Azure App Registration.');
+          } else {
+            showToast('Sync error: ' + err.substring(0, 100));
+          }
+        }
+      } catch(e) { showToast('Sync error: ' + e.message.substring(0, 100)); }
+      btn.disabled = false; btn.textContent = 'Sync';
+    }
 
     async function exportCSV(type) { showToast('Generating...'); try { const r = await fetch('/api/reports?type=' + type + '&format=csv'); const b = await r.blob(); const u = URL.createObjectURL(b); const a = document.createElement('a'); a.href = u; a.download = 'intune-' + type + '-' + new Date().toISOString().split('T')[0] + '.csv'; a.click(); URL.revokeObjectURL(u); showToast('Downloaded'); } catch(e) { showToast('Error: ' + e.message); } }
 
