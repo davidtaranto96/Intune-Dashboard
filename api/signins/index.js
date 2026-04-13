@@ -1,25 +1,25 @@
-const { graphRequest } = require('../graphClient');
+const { graphRequest, getAccessToken } = require('../graphClient');
 const fetch = require('isomorphic-fetch');
 
 module.exports = async function (context, req) {
   try {
     const filter = req.query.filter || '';
-    const top = parseInt(req.query.top) || 100;
-    const days = parseInt(req.query.days) || 7;
+    const top = Math.min(parseInt(req.query.top) || 250, 1000);
+    const days = Math.min(parseInt(req.query.days) || 7, 30);
     const search = req.query.search || '';
 
-    // Build the query - get recent sign-ins (use v1.0, falls back to beta)
-    // Max $top for signIns is 1000 per Microsoft Graph docs
-    let endpoint = `/auditLogs/signIns?$top=${Math.min(top, 1000)}&$orderby=createdDateTime desc`;
-
-    // Add filters
+    // Build the query - get recent sign-ins
+    // Graph signIns: page size caps at 1000, but filter + orderby must be built carefully.
+    // Use $filter for time range (Graph retains ~30 days for signIns). Strip milliseconds
+    // from ISO timestamps — Graph filter parser rejects fractional seconds on this endpoint.
     const filters = [];
 
-    // Time range filter
-    if (days > 0 && days <= 30) {
+    if (days > 0) {
       const since = new Date();
       since.setDate(since.getDate() - days);
-      filters.push(`createdDateTime ge ${since.toISOString()}`);
+      // Format as 2026-04-06T12:34:56Z (no milliseconds) — required by Graph signIns filter.
+      const isoSince = since.toISOString().split('.')[0] + 'Z';
+      filters.push(`createdDateTime ge ${isoSince}`);
     }
 
     if (filter === 'blocked') {
@@ -38,12 +38,39 @@ module.exports = async function (context, req) {
       filters.push(`(startswith(userDisplayName,'${search}') or startswith(userPrincipalName,'${search}'))`);
     }
 
+    // Page size for the first request. signIns endpoint doesn't support $orderby reliably
+    // with certain filter combinations — it natively returns newest-first, so we skip $orderby.
+    const pageSize = Math.min(top, 1000);
+    let endpoint = `/auditLogs/signIns?$top=${pageSize}`;
     if (filters.length) {
       endpoint += '&$filter=' + filters.join(' and ');
     }
 
-    const data = await graphRequest(endpoint);
-    const signIns = data.value || [];
+    // Paginate until we hit `top` results or exhaust the time window.
+    // This is the key fix: without pagination, $top=100 + high-volume tenants returned
+    // only today's records because the first page was already saturated.
+    const signIns = [];
+    let url = `https://graph.microsoft.com/v1.0${endpoint}`;
+    const token = await getAccessToken();
+    let pages = 0;
+    const MAX_PAGES = 10; // safety cap: up to 10,000 records
+
+    while (url && signIns.length < top && pages < MAX_PAGES) {
+      const resp = await fetch(url, {
+        headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }
+      });
+      if (!resp.ok) {
+        const err = await resp.text();
+        throw new Error(`Graph API error: ${resp.status} - ${err}`);
+      }
+      const pageData = await resp.json();
+      if (pageData.value) signIns.push(...pageData.value);
+      url = pageData['@odata.nextLink'] || null;
+      pages++;
+    }
+
+    // Trim to requested top
+    if (signIns.length > top) signIns.length = top;
 
     // Enrich with summaries
     const enriched = signIns.map(s => {
