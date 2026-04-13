@@ -4,7 +4,7 @@ const fetch = require('isomorphic-fetch');
 module.exports = async function (context, req) {
   try {
     const filter = req.query.filter || '';
-    const top = Math.min(parseInt(req.query.top) || 1000, 5000);
+    const top = Math.min(parseInt(req.query.top) || 1000, 10000);
     const days = Math.min(parseInt(req.query.days) || 7, 30);
     const search = req.query.search || '';
 
@@ -52,7 +52,7 @@ module.exports = async function (context, req) {
     let url = initialUrl;
     const token = await getAccessToken();
     let pages = 0;
-    const MAX_PAGES = 25; // safety cap: up to 25,000 records
+    const MAX_PAGES = 50; // safety cap: up to 50,000 records
     let hadNextLink = false;
 
     while (url && signIns.length < top && pages < MAX_PAGES) {

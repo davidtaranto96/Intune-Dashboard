@@ -538,6 +538,13 @@
         </div>
         <div id="signinRecommendation" style="display:none;background:#fff4ce;border-left:4px solid #ff8c00;padding:12px 16px;border-radius:8px;margin-bottom:16px;font-size:13px;"></div>
         <div id="signinDiagnostics" style="display:none;background:#eef6fc;border-left:4px solid #0078d4;padding:10px 14px;border-radius:6px;margin-bottom:12px;font-size:12px;color:#333;font-family:monospace;"></div>
+        <div id="smartInsights" style="display:none;background:white;border-radius:12px;padding:20px;margin-bottom:16px;box-shadow:0 1px 3px rgba(0,0,0,0.08);">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+            <h3 style="margin:0;font-size:16px;color:#201f1e;">&#128200; Smart Insights — Riesgo por cuenta</h3>
+            <button onclick="exportInsightsCSV()" style="background:#107c10;color:white;border:none;padding:6px 12px;border-radius:6px;font-size:12px;cursor:pointer;">&#8595; Export</button>
+          </div>
+          <div id="insightsGrid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;"></div>
+        </div>
         <div class="table-container">
           <div class="table-header">
             <h3>Recent Sign-in Activity</h3>
@@ -566,6 +573,7 @@
                 <option value="1000" selected>Top 1000</option>
                 <option value="2000">Top 2000</option>
                 <option value="5000">Top 5000</option>
+                <option value="10000">Top 10000</option>
               </select>
               <select class="filter-select" id="signinCountry" onchange="filterSignins()">
                 <option value="">All Countries</option>
@@ -1019,6 +1027,7 @@
         document.getElementById('mfaSignins').textContent = s.mfaRequired || 0;
         document.getElementById('riskySignins').textContent = s.riskySignIns || 0;
         renderSignins(allSignins);
+        renderSmartInsights(allSignins);
       } catch (e) {
         document.getElementById('signinsTable').innerHTML = '<tr><td colspan="7" style="text-align:center;padding:40px;color:#d13438;">Error: ' + esc(e.message) + '<br><br><span style="font-size:12px;color:#666;">Make sure AuditLog.Read.All permission is granted. Sign-in logs also require Azure AD Premium P1/P2 license.</span></td></tr>';
       }
@@ -1026,6 +1035,99 @@
 
     let activeSigninQuickFilter = 'all';
     const SAFE_COUNTRIES = ['AR','US','BR','MX','CL','PE','CO','UY','PY','BO','EC','VE','CR','PA','CU','DO','GT','HN','NI','SV'];
+
+    let lastInsights = null;
+
+    function renderSmartInsights(signins) {
+      const container = document.getElementById('smartInsights');
+      const grid = document.getElementById('insightsGrid');
+      if (!container || !grid) return;
+      if (!signins || !signins.length) { container.style.display = 'none'; return; }
+
+      // Aggregate per user (UPN)
+      const byUser = {};
+      signins.forEach(s => {
+        const upn = s.userPrincipalName || 'unknown';
+        if (!byUser[upn]) {
+          byUser[upn] = {
+            upn, name: s.userDisplayName || upn,
+            total: 0, blocked: 0, risky: 0, foreign: 0, malicious: 0, locked: 0,
+            countries: new Set(), ips: new Set(),
+            lastFail: null
+          };
+        }
+        const u = byUser[upn];
+        u.total++;
+        if (s.isBlocked) u.blocked++;
+        if (s.riskLevel && s.riskLevel !== 'none' && s.riskLevel !== 'hidden') u.risky++;
+        const cc = s.location && s.location.countryOrRegion;
+        if (cc && !SAFE_COUNTRIES.includes(cc)) u.foreign++;
+        if (cc) u.countries.add(cc);
+        if (s.ipAddress) u.ips.add(s.ipAddress);
+        const reason = (s.status && s.status.failureReason || '').toLowerCase();
+        if (reason.includes('malicious')) u.malicious++;
+        if (reason.includes('locked')) u.locked++;
+        if (s.isBlocked && s.createdDateTime) u.lastFail = s.createdDateTime;
+      });
+
+      // Compute risk score: weighted
+      const users = Object.values(byUser).map(u => {
+        const score = u.blocked * 2 + u.risky * 3 + u.foreign * 2 + u.malicious * 5 + u.locked * 4;
+        return { ...u, score, countries: Array.from(u.countries), ips: Array.from(u.ips) };
+      });
+
+      const topCompromised = [...users].filter(u => u.score > 0).sort((a,b) => b.score - a.score).slice(0,5);
+      const topBlocked = [...users].filter(u => u.blocked > 0).sort((a,b) => b.blocked - a.blocked).slice(0,5);
+      const topForeign = [...users].filter(u => u.foreign > 0).sort((a,b) => b.foreign - a.foreign).slice(0,5);
+      const topBrute = [...users].filter(u => u.blocked >= 3).sort((a,b) => b.blocked - a.blocked).slice(0,5);
+
+      lastInsights = { topCompromised, topBlocked, topForeign, topBrute };
+
+      const card = (title, color, icon, rows, renderRow) => {
+        if (!rows.length) return '';
+        return '<div style="border:1px solid #edebe9;border-radius:10px;padding:14px;">' +
+          '<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">' +
+          '<span style="font-size:18px;">' + icon + '</span>' +
+          '<strong style="color:' + color + ';font-size:13px;">' + title + '</strong>' +
+          '</div>' +
+          rows.map(renderRow).join('') +
+          '</div>';
+      };
+
+      const rowFor = (u, metricLabel, metricValue) =>
+        '<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid #f3f2f1;">' +
+        '<div style="min-width:0;flex:1;"><div style="font-size:12px;font-weight:600;color:#201f1e;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + esc(u.name) + '</div>' +
+        '<div style="font-size:11px;color:#666;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + esc(u.upn) + '</div></div>' +
+        '<div style="text-align:right;margin-left:10px;"><div style="font-size:15px;font-weight:700;color:#d13438;">' + metricValue + '</div>' +
+        '<div style="font-size:10px;color:#666;">' + metricLabel + '</div></div>' +
+        '</div>';
+
+      grid.innerHTML = [
+        card('Cuentas Más Comprometidas', '#b4009e', '&#128680;', topCompromised, u => rowFor(u, 'risk score', u.score)),
+        card('Más Bloqueos', '#d13438', '&#128272;', topBlocked, u => rowFor(u, 'blocks', u.blocked)),
+        card('Brute Force Sospechoso (3+ fails)', '#8b0000', '&#128274;', topBrute, u => rowFor(u, 'fails', u.blocked)),
+        card('Más Logins Extranjeros', '#ff8c00', '&#127758;', topForeign, u => rowFor(u, 'foreign', u.foreign))
+      ].filter(Boolean).join('');
+
+      container.style.display = grid.innerHTML ? 'block' : 'none';
+    }
+
+    function exportInsightsCSV() {
+      if (!lastInsights) { showToast && showToast('No insights yet'); return; }
+      const rows = [['Category','User','UPN','RiskScore','Blocked','Risky','Foreign','Malicious','Locked','Countries','IPs']];
+      const addCat = (cat, arr) => arr.forEach(u => rows.push([cat, u.name, u.upn, u.score, u.blocked, u.risky, u.foreign, u.malicious, u.locked, u.countries.join('|'), u.ips.join('|')]));
+      addCat('Compromised', lastInsights.topCompromised);
+      addCat('MostBlocked', lastInsights.topBlocked);
+      addCat('BruteForce', lastInsights.topBrute);
+      addCat('ForeignLogins', lastInsights.topForeign);
+      const csv = rows.map(r => r.map(v => '"' + String(v||'').replace(/"/g,'""') + '"').join(',')).join('\n');
+      const blob = new Blob([csv], { type: 'text/csv' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'smart-insights-' + new Date().toISOString().split('T')[0] + '.csv';
+      a.click();
+      showToast && showToast('Insights exported');
+    }
 
     function filterSignins() {
       const search = document.getElementById('signinSearch').value.toLowerCase();
