@@ -4,7 +4,7 @@ const fetch = require('isomorphic-fetch');
 module.exports = async function (context, req) {
   try {
     const filter = req.query.filter || '';
-    const top = Math.min(parseInt(req.query.top) || 250, 1000);
+    const top = Math.min(parseInt(req.query.top) || 1000, 5000);
     const days = Math.min(parseInt(req.query.days) || 7, 30);
     const search = req.query.search || '';
 
@@ -53,7 +53,7 @@ module.exports = async function (context, req) {
     let url = `https://graph.microsoft.com/v1.0${endpoint}`;
     const token = await getAccessToken();
     let pages = 0;
-    const MAX_PAGES = 10; // safety cap: up to 10,000 records
+    const MAX_PAGES = 25; // safety cap: up to 25,000 records
 
     while (url && signIns.length < top && pages < MAX_PAGES) {
       const resp = await fetch(url, {
