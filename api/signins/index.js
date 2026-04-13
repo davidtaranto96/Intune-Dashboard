@@ -5,13 +5,23 @@ module.exports = async function (context, req) {
   try {
     const filter = req.query.filter || '';
     const top = parseInt(req.query.top) || 100;
+    const days = parseInt(req.query.days) || 7;
     const search = req.query.search || '';
 
     // Build the query - get recent sign-ins (use v1.0, falls back to beta)
-    let endpoint = `/auditLogs/signIns?$top=${Math.min(top, 200)}&$orderby=createdDateTime desc`;
+    // Max $top for signIns is 1000 per Microsoft Graph docs
+    let endpoint = `/auditLogs/signIns?$top=${Math.min(top, 1000)}&$orderby=createdDateTime desc`;
 
     // Add filters
     const filters = [];
+
+    // Time range filter
+    if (days > 0 && days <= 30) {
+      const since = new Date();
+      since.setDate(since.getDate() - days);
+      filters.push(`createdDateTime ge ${since.toISOString()}`);
+    }
+
     if (filter === 'blocked') {
       filters.push("status/errorCode ne 0");
     } else if (filter === 'success') {
@@ -25,7 +35,7 @@ module.exports = async function (context, req) {
     }
 
     if (search) {
-      filters.push(`startswith(userDisplayName,'${search}') or startswith(userPrincipalName,'${search}')`);
+      filters.push(`(startswith(userDisplayName,'${search}') or startswith(userPrincipalName,'${search}'))`);
     }
 
     if (filters.length) {
@@ -61,7 +71,8 @@ module.exports = async function (context, req) {
           operatingSystem: s.deviceDetail?.operatingSystem,
           browser: s.deviceDetail?.browser,
           isCompliant: s.deviceDetail?.isCompliant,
-          isManaged: s.deviceDetail?.isManaged
+          isManaged: s.deviceDetail?.isManaged,
+          trustType: s.deviceDetail?.trustType
         },
         location: {
           city: s.location?.city,

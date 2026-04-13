@@ -43,12 +43,27 @@
     .user-badge { display: flex; align-items: center; gap: 8px; background: rgba(255,255,255,0.12); padding: 6px 14px; border-radius: 20px; }
     .user-avatar { width: 28px; height: 28px; border-radius: 50%; background: rgba(255,255,255,0.25); display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 600; }
     .user-badge .email { font-size: 12px; }
-    .refresh-btn { background: rgba(255,255,255,0.15); color: white; border: 1px solid rgba(255,255,255,0.3); width: 36px; height: 36px; border-radius: 50%; cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center; transition: background 0.2s; }
-    .refresh-btn:hover { background: rgba(255,255,255,0.25); }
+    .refresh-btn { background: linear-gradient(135deg, rgba(255,255,255,0.22), rgba(255,255,255,0.08)); color: white; border: 1px solid rgba(255,255,255,0.35); width: 38px; height: 38px; border-radius: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+    .refresh-btn:hover { background: linear-gradient(135deg, rgba(255,255,255,0.35), rgba(255,255,255,0.18)); transform: translateY(-1px); box-shadow: 0 3px 8px rgba(0,0,0,0.15); }
+    .refresh-btn:active { transform: translateY(0); }
     .refresh-btn.spinning svg { animation: spin 0.8s linear infinite; }
+    .refresh-btn svg { transition: transform 0.2s; }
     .signout-btn { background: rgba(255,255,255,0.1); color: white; border: 1px solid rgba(255,255,255,0.2); padding: 6px 14px; border-radius: 6px; cursor: pointer; font-size: 12px; }
     .signout-btn:hover { background: rgba(255,255,255,0.2); }
     .last-updated { font-size: 10px; opacity: 0.6; }
+    .app-version { font-size: 10px; opacity: 0.5; letter-spacing: 0.3px; }
+    .whats-new-btn { background: rgba(255,255,255,0.1); color: white; border: 1px solid rgba(255,255,255,0.2); padding: 5px 11px; border-radius: 6px; cursor: pointer; font-size: 12px; display: inline-flex; align-items: center; gap: 5px; position: relative; }
+    .whats-new-btn:hover { background: rgba(255,255,255,0.2); }
+    .new-badge { background: #ff8c00; color: white; border-radius: 50%; width: 16px; height: 16px; font-size: 9px; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; position: absolute; top: -4px; right: -4px; }
+    .changelog-version { font-size: 15px; font-weight: 700; color: #0078d4; margin-bottom: 4px; }
+    .changelog-date { font-size: 11px; color: #999; margin-bottom: 12px; }
+    .changelog-item { display: flex; gap: 10px; align-items: flex-start; padding: 6px 0; border-bottom: 1px solid #f5f5f5; }
+    .changelog-item:last-child { border-bottom: none; }
+    .changelog-tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: 600; text-transform: uppercase; white-space: nowrap; flex-shrink: 0; }
+    .changelog-tag.new { background: #dff6dd; color: #107c10; }
+    .changelog-tag.fix { background: #fff4ce; color: #9e6000; }
+    .changelog-tag.improve { background: #e8f0fe; color: #0078d4; }
+    .changelog-text { font-size: 13px; color: #333; }
 
     .tabs { display: flex; background: white; border-bottom: 2px solid #e0e0e0; padding: 0 24px; overflow-x: auto; }
     .tab { padding: 12px 20px; cursor: pointer; font-size: 14px; font-weight: 500; color: #666; border-bottom: 3px solid transparent; transition: all 0.2s; white-space: nowrap; }
@@ -197,6 +212,56 @@
     .ca-pill.applied { background: #dff6dd; color: #107c10; }
     .ca-pill.blocked { background: #fde7e9; color: #d13438; }
 
+    /* Clickable sign-in rows */
+    tr.signin-row-blocked { background: #fff5f5 !important; border-left: 3px solid #d13438; }
+    tr.signin-row-blocked:hover { background: #fde7e9 !important; }
+    tr.signin-row-risky { background: #fffbf0 !important; border-left: 3px solid #ff8c00; }
+    tr.signin-row-risky:hover { background: #fff4ce !important; }
+
+    /* Sign-in detail modal */
+    .detail-section { margin-bottom: 20px; }
+    .detail-section h4 { font-size: 11px; font-weight: 700; color: #0078d4; text-transform: uppercase; letter-spacing: 0.7px; border-bottom: 1px solid #e8f0fe; padding-bottom: 6px; margin-bottom: 8px; }
+    .detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .detail-row { display: flex; justify-content: space-between; align-items: flex-start; padding: 6px 10px; background: #f8f9fa; border-radius: 5px; gap: 12px; margin-bottom: 3px; }
+    .detail-label { font-size: 12px; color: #666; min-width: 110px; flex-shrink: 0; }
+    .detail-value { font-size: 12px; color: #1a1a2e; font-weight: 500; text-align: right; word-break: break-all; }
+    .detail-value.risk-high { color: #d13438; font-weight: 700; }
+    .detail-value.risk-medium { color: #ff8c00; font-weight: 700; }
+    .detail-value.risk-low { color: #0078d4; }
+    .detail-value.val-blocked { color: #d13438; font-weight: 700; }
+    .detail-value.val-success { color: #107c10; font-weight: 700; }
+    @media (max-width: 768px) { .detail-grid { grid-template-columns: 1fr; } }
+
+    /* Security overview cards */
+    .security-overview-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-bottom: 12px; }
+    .security-card { background: white; border-radius: 10px; padding: 16px; box-shadow: 0 1px 4px rgba(0,0,0,0.08); border-top: 3px solid #ccc; }
+    .security-card.sec-blocked { border-top-color: #d13438; }
+    .security-card.sec-risky { border-top-color: #ff8c00; }
+    .security-card.sec-locked { border-top-color: #8b0000; }
+    .security-card.sec-ca { border-top-color: #5c2a9d; }
+    .security-card .sc-label { font-size: 11px; color: #666; text-transform: uppercase; letter-spacing: 0.4px; }
+    .security-card .sc-value { font-size: 26px; font-weight: 700; margin-top: 4px; }
+    .security-card.sec-blocked .sc-value { color: #d13438; }
+    .security-card.sec-risky .sc-value { color: #ff8c00; }
+    .security-card.sec-locked .sc-value { color: #8b0000; }
+    .security-card.sec-ca .sc-value { color: #5c2a9d; }
+    .security-card .sc-sub { font-size: 10px; color: #999; margin-top: 2px; }
+
+    /* Notification section */
+    .notify-section { background: white; border-radius: 10px; padding: 24px; box-shadow: 0 1px 4px rgba(0,0,0,0.08); margin-top: 24px; }
+    .notify-section h3 { font-size: 16px; margin-bottom: 4px; }
+    .notify-desc { font-size: 13px; color: #666; margin-bottom: 20px; }
+    .notify-form { display: grid; gap: 16px; }
+    .notify-field > label { display: block; font-size: 12px; font-weight: 600; color: #555; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
+    .notify-field textarea, .notify-field input[type="email"] { width: 100%; padding: 10px 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 13px; font-family: inherit; resize: vertical; }
+    .notify-field textarea:focus, .notify-field input:focus { outline: none; border-color: #0078d4; box-shadow: 0 0 0 3px rgba(0,120,212,0.1); }
+    .notify-checks { display: flex; flex-wrap: wrap; gap: 10px; }
+    .notify-check { display: flex; align-items: center; gap: 8px; padding: 8px 14px; border: 1.5px solid #ddd; border-radius: 8px; cursor: pointer; font-size: 13px; transition: all 0.15s; }
+    .notify-check:has(input:checked) { border-color: #0078d4; background: #f0f7ff; color: #0078d4; }
+    .notify-actions { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+    .btn-test { background: #fff4ce; color: #9e6000; border: 1.5px solid #ff8c00; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 500; }
+    .btn-test:hover { background: #fde7c0; }
+
     .home-hero { background: white; border-radius: 12px; padding: 40px; margin-bottom: 24px; box-shadow: 0 1px 4px rgba(0,0,0,0.08); text-align: center; }
     .home-hero h2 { font-size: 28px; color: #0078d4; margin-bottom: 12px; }
     .home-hero p { font-size: 16px; color: #555; max-width: 700px; margin: 0 auto 24px; line-height: 1.6; }
@@ -291,16 +356,23 @@
   </div>
 
   <!-- ===== DASHBOARD ===== -->
-  <div class="dashboard" id="dashboard">
+  <div class="dashboard" id="appRoot">
     <div class="header">
       <div>
         <h1>Intune Compliance Dashboard</h1>
         <div class="subtitle">JBKnowledge - Device Management</div>
       </div>
       <div class="header-right">
-        <span class="last-updated" id="lastUpdated"></span>
-        <button class="refresh-btn" id="refreshBtn" onclick="refreshAll()" title="Refresh data">
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M1 1v5h5"/><path d="M1.5 5.5A7 7 0 1 1 1 8"/></svg>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:2px;">
+          <span class="last-updated" id="lastUpdated"></span>
+          <span class="app-version" id="appVersion"></span>
+        </div>
+        <button class="whats-new-btn" onclick="openWhatsNew()" title="What's new in this version">
+          &#128196; What's New
+          <span class="new-badge" id="newBadge" style="display:none;">!</span>
+        </button>
+        <button class="refresh-btn" id="refreshBtn" onclick="refreshAll()" title="Refresh all data">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 0 1-9 9c-2.4 0-4.6-.9-6.2-2.5"/><path d="M3 12a9 9 0 0 1 9-9c2.4 0 4.6.9 6.2 2.5"/><polyline points="21 3 21 9 15 9"/><polyline points="3 21 3 15 9 15"/></svg>
         </button>
         <div class="user-badge">
           <div class="user-avatar" id="userAvatar">?</div>
@@ -333,6 +405,28 @@
           <div class="card"><div class="label">Active Policies</div><div class="value blue" id="dashPolicies">-</div></div>
           <div class="card"><div class="label">Stale (7+ days)</div><div class="value red" id="dashStale">-</div></div>
         </div>
+
+        <!-- Security Overview (populated by fetchSigninsForDashboard) -->
+        <div id="dashSecurityOverview" style="display:none;margin-bottom:24px;">
+          <div class="dash-section-title">&#128272; Security Overview <span style="font-size:11px;font-weight:400;color:#999;">(recent sign-in activity &mdash; click cards for details)</span></div>
+          <div class="security-overview-cards">
+            <div class="security-card sec-blocked clickable" onclick="openSecurityFilter('blocked')" style="cursor:pointer;"><div class="sc-label">Blocked Sign-ins</div><div class="sc-value" id="secBlockedCount">-</div><div class="sc-sub">Auth failures</div></div>
+            <div class="security-card sec-risky clickable" onclick="openSecurityFilter('risky')" style="cursor:pointer;"><div class="sc-label">Risky Sign-ins</div><div class="sc-value" id="secRiskyCount">-</div><div class="sc-sub">High / medium risk</div></div>
+            <div class="security-card sec-locked clickable" onclick="openSecurityFilter('locked')" style="cursor:pointer;"><div class="sc-label">Account Lockouts</div><div class="sc-value" id="secLockedCount">-</div><div class="sc-sub">Locked out users</div></div>
+            <div class="security-card sec-ca clickable" onclick="openSecurityFilter('ca')" style="cursor:pointer;"><div class="sc-label">CA Blocked</div><div class="sc-value" id="secCACount">-</div><div class="sc-sub">Conditional access</div></div>
+          </div>
+          <div id="dashSecurityNote" style="display:none;font-size:12px;color:#999;font-style:italic;margin-top:4px;"></div>
+        </div>
+
+        <!-- Sign-in Analytics Charts -->
+        <div id="dashSigninCharts" style="display:none;margin-bottom:24px;">
+          <div class="dash-section-title">&#128202; Sign-in Analytics</div>
+          <div class="charts-row">
+            <div class="chart-card"><h3>Sign-ins by Country (Top 10)</h3><div class="chart-container"><canvas id="signinCountryChart"></canvas></div></div>
+            <div class="chart-card"><h3>Blocked Sign-ins by Reason</h3><div class="chart-container"><canvas id="signinBlockedReasonChart"></canvas></div></div>
+          </div>
+        </div>
+
         <div class="charts-row" id="dashChartsRow">
           <div class="chart-card" id="dashComplianceCard"><h3>Compliance Status</h3><div class="chart-container"><canvas id="complianceChart"></canvas></div></div>
           <div class="chart-card" id="dashOsCard"><h3>Devices by OS</h3><div class="chart-container"><canvas id="osChart"></canvas></div></div>
@@ -354,13 +448,19 @@
         <div class="table-container" id="dashUserCoverageTable">
           <div class="table-header">
             <div>
-              <h3>Users Without Intune Device</h3>
-              <div style="font-size:12px;color:#666;margin-top:2px;">Entra ID accounts with no managed device — may be personal devices or pending onboarding</div>
+              <h3>Users Without Intune Device <span id="notEnrolledCount" style="font-size:12px;color:#666;font-weight:normal;"></span></h3>
+              <div style="font-size:12px;color:#666;margin-top:2px;">Entra ID accounts with no managed device &mdash; may be personal devices or pending onboarding</div>
+            </div>
+            <div>
+              <input type="text" class="search-box" id="notEnrolledSearch" placeholder="Search users..." oninput="renderNotEnrolledTable()" style="width:220px;padding:8px 12px;">
             </div>
           </div>
           <div style="overflow-x:auto;">
             <table><thead><tr><th>User</th><th>Email / UPN</th><th>Status</th></tr></thead>
             <tbody id="notEnrolledTable"><tr><td colspan="3" class="loading"><div class="spinner"></div><br>Loading user coverage...</td></tr></tbody></table>
+          </div>
+          <div id="notEnrolledToggleWrap" style="padding:12px 20px;text-align:center;border-top:1px solid #f0f0f0;display:none;">
+            <button class="config-btn" id="notEnrolledToggleBtn" onclick="toggleShowAllNotEnrolled()">Show all</button>
           </div>
         </div>
       </div>
@@ -399,32 +499,44 @@
       <!-- POLICIES -->
       <div id="policies" class="tab-content">
         <div class="summary-cards">
-          <div class="card"><div class="label">Compliance Policies</div><div class="value blue" id="compliancePolicyCount">-</div></div>
-          <div class="card"><div class="label">Conditional Access</div><div class="value blue" id="caPolicyCount">-</div></div>
-          <div class="card"><div class="label">App Protection</div><div class="value blue" id="appProtectionCount">-</div></div>
+          <div class="card clickable" onclick="scrollToPolicySection('compliance')"><div class="label">Compliance Policies</div><div class="value blue" id="compliancePolicyCount">-</div></div>
+          <div class="card clickable" onclick="scrollToPolicySection('ca')"><div class="label">Conditional Access</div><div class="value blue" id="caPolicyCount">-</div></div>
+          <div class="card clickable" onclick="scrollToPolicySection('app')"><div class="label">App Protection</div><div class="value blue" id="appProtectionCount">-</div></div>
         </div>
-        <div class="section-header">
+        <div class="section-header" id="compliancePoliciesSection">
           <h3>Compliance Policies <span style="font-size:12px;color:#666;font-weight:normal;">(click to view/edit)</span></h3>
           <button class="btn-primary" onclick="showToast('To create a new compliance policy, go to Intune Portal > Devices > Compliance policies > Create policy. The dashboard will show it once created.')">+ New Policy</button>
         </div>
         <div class="policy-grid" id="compliancePoliciesGrid"></div>
-        <div class="section-header" style="margin-top:24px;">
+        <div class="section-header" id="caPoliciesSection" style="margin-top:24px;">
           <h3>Conditional Access Policies <span style="font-size:12px;color:#666;font-weight:normal;">(click to view/edit state)</span></h3>
           <button class="btn-primary" onclick="showToast('To create a new CA policy, go to Entra ID > Protection > Conditional Access > New policy. The dashboard will show it once created.')">+ New CA Policy</button>
         </div>
         <div class="policy-grid" id="caPoliciesGrid"></div>
+        <div class="section-header" id="appPoliciesSection" style="margin-top:24px;">
+          <h3>App Protection Policies <span style="font-size:12px;color:#666;font-weight:normal;">(Intune MAM)</span></h3>
+        </div>
+        <div id="appPoliciesGrid" style="padding:20px;background:white;border-radius:10px;box-shadow:0 1px 4px rgba(0,0,0,0.08);font-size:13px;color:#666;">App Protection policies are managed in the Intune portal. Count shown above.</div>
       </div>
 
       <!-- SIGN-IN LOGS -->
       <div id="signins" class="tab-content">
         <div class="summary-cards" id="signinSummary">
-          <div class="card"><div class="label">Total Sign-ins</div><div class="value blue" id="totalSignins">-</div></div>
-          <div class="card"><div class="label">Successful</div><div class="value green" id="successSignins">-</div></div>
-          <div class="card"><div class="label">Blocked</div><div class="value red" id="blockedSignins">-</div></div>
-          <div class="card"><div class="label">CA Blocked</div><div class="value red" id="caBlockedSignins">-</div></div>
-          <div class="card"><div class="label">MFA Required</div><div class="value orange" id="mfaSignins">-</div></div>
-          <div class="card"><div class="label">Risky</div><div class="value red" id="riskySignins">-</div></div>
+          <div class="card clickable" onclick="signinQuickFilter('all')" data-sfilter="all"><div class="label">Total Sign-ins</div><div class="value blue" id="totalSignins">-</div></div>
+          <div class="card clickable" onclick="signinQuickFilter('success')" data-sfilter="success"><div class="label">Successful</div><div class="value green" id="successSignins">-</div></div>
+          <div class="card clickable" onclick="signinQuickFilter('blocked')" data-sfilter="blocked"><div class="label">Blocked</div><div class="value red" id="blockedSignins">-</div></div>
+          <div class="card clickable" onclick="signinQuickFilter('ca_blocked')" data-sfilter="ca_blocked"><div class="label">CA Blocked</div><div class="value red" id="caBlockedSignins">-</div></div>
+          <div class="card clickable" onclick="signinQuickFilter('mfa')" data-sfilter="mfa"><div class="label">MFA Required</div><div class="value orange" id="mfaSignins">-</div></div>
+          <div class="card clickable" onclick="signinQuickFilter('risky')" data-sfilter="risky"><div class="label">Risky</div><div class="value red" id="riskySignins">-</div></div>
         </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;">
+          <button class="config-btn" onclick="signinQuickFilter('foreign')" title="Sign-ins from outside Argentina, US, and Latin America">&#127758; Foreign Countries Only</button>
+          <button class="config-btn" onclick="signinQuickFilter('highrisk')" title="High + medium risk sign-ins">&#9888; High Risk Only</button>
+          <button class="config-btn" onclick="signinQuickFilter('bruteforce')" title="Users with 3+ failed attempts">&#128273; Repeated Failures (3+)</button>
+          <button class="config-btn" onclick="signinQuickFilter('malicious')" title="Sign-ins flagged as from malicious IPs">&#128680; Malicious IP</button>
+          <button class="config-btn" onclick="signinQuickFilter('all')" style="background:#0078d4;color:white;border-color:#0078d4;">&#8634; Reset</button>
+        </div>
+        <div id="signinRecommendation" style="display:none;background:#fff4ce;border-left:4px solid #ff8c00;padding:12px 16px;border-radius:8px;margin-bottom:16px;font-size:13px;"></div>
         <div class="table-container">
           <div class="table-header">
             <h3>Recent Sign-in Activity</h3>
@@ -439,6 +551,18 @@
                 <option value="success">Successful Only</option>
                 <option value="ca_failure">CA Blocked</option>
                 <option value="mfa_required">MFA Required</option>
+              </select>
+              <select class="filter-select" id="signinDays" onchange="fetchSignins()" title="Time range">
+                <option value="1">Last 24h</option>
+                <option value="7" selected>Last 7 days</option>
+                <option value="14">Last 14 days</option>
+                <option value="30">Last 30 days</option>
+              </select>
+              <select class="filter-select" id="signinTop" onchange="fetchSignins()" title="Max records">
+                <option value="100">Top 100</option>
+                <option value="250" selected>Top 250</option>
+                <option value="500">Top 500</option>
+                <option value="1000">Top 1000</option>
               </select>
               <select class="filter-select" id="signinCountry" onchange="filterSignins()">
                 <option value="">All Countries</option>
@@ -466,9 +590,10 @@
       <!-- ALERTS -->
       <div id="alerts" class="tab-content">
         <div class="summary-cards">
-          <div class="card"><div class="label">Critical Alerts</div><div class="value red" id="criticalAlerts">-</div></div>
-          <div class="card"><div class="label">Warnings</div><div class="value orange" id="warningAlerts">-</div></div>
-          <div class="card"><div class="label">Info</div><div class="value blue" id="infoAlerts">-</div></div>
+          <div class="card clickable" onclick="filterAlertsByLevel('critical')" data-afilter="critical"><div class="label">Critical Alerts</div><div class="value red" id="criticalAlerts">-</div></div>
+          <div class="card clickable" onclick="filterAlertsByLevel('warning')" data-afilter="warning"><div class="label">Warnings</div><div class="value orange" id="warningAlerts">-</div></div>
+          <div class="card clickable" onclick="filterAlertsByLevel('info')" data-afilter="info"><div class="label">Info</div><div class="value blue" id="infoAlerts">-</div></div>
+          <div class="card clickable" onclick="filterAlertsByLevel('all')" data-afilter="all" style="outline:2px solid #0078d4;outline-offset:-2px;"><div class="label">Show All</div><div class="value gray" id="allAlertsCount">-</div></div>
         </div>
         <div class="alerts-list" id="alertsList"></div>
         <div class="alert-rules">
@@ -479,6 +604,37 @@
           <div class="alert-rule"><div class="rule-info"><div class="rule-name">Grace Period Expiring</div><div class="rule-desc">Alert when devices are in enrollment grace period</div></div><label class="toggle"><input type="checkbox" checked onchange="saveAlertRules()"><span class="slider"></span></label></div>
           <div class="alert-rule"><div class="rule-info"><div class="rule-name">Encryption Not Enabled</div><div class="rule-desc">Alert when devices don't have encryption enabled</div></div><label class="toggle"><input type="checkbox" onchange="saveAlertRules()"><span class="slider"></span></label></div>
           <div class="alert-rule"><div class="rule-info"><div class="rule-name">Stale Device Alert (30+ days)</div><div class="rule-desc">Potential abandoned devices</div></div><label class="toggle"><input type="checkbox" onchange="saveAlertRules()"><span class="slider"></span></label></div>
+        </div>
+
+        <!-- Email Notifications -->
+        <div class="notify-section">
+          <h3>&#128231; Email Notifications</h3>
+          <p class="notify-desc">Get alerted by email when issues are detected. Requires <code>Mail.Send</code> permission on the App Registration and a licensed sender mailbox.</p>
+          <div class="notify-form">
+            <div class="notify-field">
+              <label>Recipients (one email per line)</label>
+              <textarea id="notifyRecipients" rows="3" placeholder="david.taranto@jbknowledge.com&#10;emilio.reyes@jbknowledge.com"></textarea>
+            </div>
+            <div class="notify-field">
+              <label>Send alerts for</label>
+              <div class="notify-checks">
+                <label class="notify-check"><input type="checkbox" id="notifyNonCompliant" checked> Non-compliant devices</label>
+                <label class="notify-check"><input type="checkbox" id="notifyStale" checked> Stale devices (7+ days)</label>
+                <label class="notify-check"><input type="checkbox" id="notifyBlocked"> Blocked sign-ins</label>
+                <label class="notify-check"><input type="checkbox" id="notifyRisky"> Risky sign-ins</label>
+                <label class="notify-check"><input type="checkbox" id="notifyLocked"> Account lockouts</label>
+              </div>
+            </div>
+            <div class="notify-field">
+              <label>Sender email (licensed mailbox in your org)</label>
+              <input type="email" id="notifySender" placeholder="dashboard-alerts@jbknowledge.com">
+            </div>
+            <div class="notify-actions">
+              <button class="btn-primary" onclick="saveNotifySettings()">&#128190; Save Settings</button>
+              <button class="btn-test" onclick="sendTestNotification()">&#128231; Send Test Alert Now</button>
+              <span id="notifyStatus" style="font-size:12px;color:#666;"></span>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -572,6 +728,8 @@
         <div class="config-item"><label>Compliance Status Chart</label><label class="toggle"><input type="checkbox" id="cfg_complianceChart" onchange="applyDashboardConfig()"><span class="slider"></span></label></div>
         <div class="config-item"><label>Devices by OS Chart</label><label class="toggle"><input type="checkbox" id="cfg_osChart" onchange="applyDashboardConfig()"><span class="slider"></span></label></div>
         <div class="config-item"><label>Compliance by Platform Chart <span style="font-size:11px;background:#e8f0fe;color:#0078d4;padding:2px 6px;border-radius:4px;margin-left:4px;">New</span></label><label class="toggle"><input type="checkbox" id="cfg_complianceByOS" onchange="applyDashboardConfig()"><span class="slider"></span></label></div>
+        <div class="config-item"><label>Security Overview <span style="font-size:11px;background:#fde7e9;color:#d13438;padding:2px 6px;border-radius:4px;margin-left:4px;">New</span></label><label class="toggle"><input type="checkbox" id="cfg_securityOverview" onchange="applyDashboardConfig()"><span class="slider"></span></label></div>
+        <div class="config-item"><label>Sign-in Analytics Charts <span style="font-size:11px;background:#e8f0fe;color:#0078d4;padding:2px 6px;border-radius:4px;margin-left:4px;">New</span></label><label class="toggle"><input type="checkbox" id="cfg_signinCharts" onchange="applyDashboardConfig()"><span class="slider"></span></label></div>
         <div class="config-item"><label>Recent Alerts</label><label class="toggle"><input type="checkbox" id="cfg_alerts" onchange="applyDashboardConfig()"><span class="slider"></span></label></div>
         <div class="config-item"><label>User Enrollment Coverage</label><label class="toggle"><input type="checkbox" id="cfg_userCoverage" onchange="applyDashboardConfig()"><span class="slider"></span></label></div>
       </div>
@@ -597,21 +755,94 @@
     </div>
   </div>
 
+  <!-- What's New Modal -->
+  <div class="modal-overlay" id="whatsNewModal">
+    <div class="modal" style="max-width:580px;">
+      <div class="modal-header">
+        <h2>&#128196; What's New</h2>
+        <button class="modal-close" onclick="closeWhatsNew()">&times;</button>
+      </div>
+      <div style="max-height:65vh;overflow-y:auto;padding-right:4px;">
+
+        <div style="margin-bottom:24px;">
+          <div class="changelog-version">v2.5.0</div>
+          <div class="changelog-date">April 2026 &mdash; Security &amp; Analytics Update</div>
+          <div class="changelog-item"><span class="changelog-tag new">New</span><span class="changelog-text"><strong>Sign-in Analytics Charts</strong> on Dashboard &mdash; see where your users log in from (by country) and why sign-ins are being blocked (wrong password, MFA, CA policy, etc.)</span></div>
+          <div class="changelog-item"><span class="changelog-tag new">New</span><span class="changelog-text"><strong>Security Overview</strong> on Dashboard &mdash; 4 cards showing blocked sign-ins, risky sign-ins, account lockouts, and CA-blocked. Click any card to see the affected events.</span></div>
+          <div class="changelog-item"><span class="changelog-tag new">New</span><span class="changelog-text"><strong>Sign-in Detail Modal</strong> &mdash; click any row in Sign-in Logs for full details: IP, location, device trust type, risk level, MFA method, all CA policies applied/blocked, error code, and failure reason.</span></div>
+          <div class="changelog-item"><span class="changelog-tag new">New</span><span class="changelog-text"><strong>Mixed Alerts</strong> &mdash; Alerts tab now shows both device compliance alerts <em>and</em> sign-in security alerts (blocked, risky, lockouts, repeated failures) in one unified list.</span></div>
+          <div class="changelog-item"><span class="changelog-tag new">New</span><span class="changelog-text"><strong>Email Notifications</strong> &mdash; get alerted by email when issues are detected. Configure recipients, sender, and alert types in the Alerts tab. Requires <code>Mail.Send</code> permission.</span></div>
+          <div class="changelog-item"><span class="changelog-tag improve">Improve</span><span class="changelog-text"><strong>Users Without Device list</strong> &mdash; collapsed to 5 rows by default with a search box. Click "Show all" to expand the full list.</span></div>
+          <div class="changelog-item"><span class="changelog-tag improve">Improve</span><span class="changelog-text"><strong>Sign-in Logs table</strong> &mdash; blocked rows highlighted red, risky rows orange. Added device trust type column. Row highlighting makes issues stand out at a glance.</span></div>
+          <div class="changelog-item"><span class="changelog-tag improve">Improve</span><span class="changelog-text"><strong>Dashboard Config</strong> &mdash; new toggles for Security Overview and Sign-in Analytics Charts sections.</span></div>
+          <div class="changelog-item"><span class="changelog-tag fix">Fix</span><span class="changelog-text"><strong>Dashboard freeze on tab switch</strong> &mdash; all charts (compliance, OS, sign-in) now re-render correctly when you return to the Dashboard tab.</span></div>
+        </div>
+
+        <div style="margin-bottom:24px;">
+          <div class="changelog-version">v2.4.0</div>
+          <div class="changelog-date">March 2026 &mdash; Access Control Update</div>
+          <div class="changelog-item"><span class="changelog-tag new">New</span><span class="changelog-text"><strong>Domain restriction</strong> &mdash; only @jbknowledge.com accounts can access the dashboard. Others see "Access Denied" with option to switch accounts.</span></div>
+          <div class="changelog-item"><span class="changelog-tag fix">Fix</span><span class="changelog-text"><strong>Login loop fixed</strong> &mdash; Sign Out properly clears the session. Login always prompts for credentials (<code>prompt=login</code>).</span></div>
+          <div class="changelog-item"><span class="changelog-tag improve">Improve</span><span class="changelog-text"><strong>Sync device error</strong> &mdash; clearer message when <code>PrivilegedOperations.All</code> permission is missing instead of a generic 403 error.</span></div>
+        </div>
+
+        <div style="margin-bottom:24px;">
+          <div class="changelog-version">v2.3.0</div>
+          <div class="changelog-date">March 2026 &mdash; Dashboard &amp; Reports Update</div>
+          <div class="changelog-item"><span class="changelog-tag new">New</span><span class="changelog-text"><strong>Configurable Dashboard</strong> &mdash; toggle visibility of each section and choose chart style (donut / pie / bar).</span></div>
+          <div class="changelog-item"><span class="changelog-tag new">New</span><span class="changelog-text"><strong>Compliance by Platform chart</strong> &mdash; stacked bar showing compliant vs non-compliant per OS.</span></div>
+          <div class="changelog-item"><span class="changelog-tag new">New</span><span class="changelog-text"><strong>User Enrollment Coverage</strong> &mdash; shows which Entra ID users have no Intune device enrolled.</span></div>
+          <div class="changelog-item"><span class="changelog-tag new">New</span><span class="changelog-text"><strong>Clickable Alerts</strong> &mdash; click any alert to see exactly which devices are affected.</span></div>
+          <div class="changelog-item"><span class="changelog-tag improve">Improve</span><span class="changelog-text"><strong>Reports tab redesigned</strong> &mdash; dropdown selects for type, compliance filter, OS filter, and record count. CSV export for devices, policies, sign-ins, and user coverage.</span></div>
+        </div>
+
+      </div>
+      <div style="padding-top:16px;border-top:1px solid #e0e0e0;display:flex;justify-content:space-between;align-items:center;">
+        <span style="font-size:11px;color:#999;">Last deploy detected on page load</span>
+        <button class="btn-primary" onclick="closeWhatsNew()">Got it</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sign-in Detail Modal -->
+  <div class="modal-overlay" id="signinModal">
+    <div class="modal" style="max-width:860px;">
+      <div class="modal-header">
+        <div>
+          <h2 id="signinModalTitle">Sign-in Details</h2>
+          <div id="signinModalSubtitle" style="font-size:12px;color:#666;margin-top:2px;"></div>
+        </div>
+        <button class="modal-close" onclick="closeSigninModal()">&times;</button>
+      </div>
+      <div id="signinModalContent"></div>
+    </div>
+  </div>
+
   <div class="toast" id="toast"></div>
 
   <script>
+    const APP_VERSION = 'v2.6.0';
+    const APP_BUILD_DATE = '2026-04-13';
+
     let allDevices = [];
     let allPolicies = {};
     let allSignins = [];
     let currentAlerts = [];
+    let deviceAlerts = [];
+    let securityAlerts = [];
     let complianceChart = null;
     let osChart = null;
     let complianceByOSChart = null;
+    let signinCountryChart = null;
+    let signinBlockedReasonChart = null;
+    let dashboardSigninData = null;
+    let allNotEnrolledUsers = [];
+    let showAllNotEnrolled = false;
     let lastSummary = null;
     let activeCardFilter = 'all';
     let currentEditPolicy = null;
     let editedSettings = {};
-    let dashboardConfig = { complianceChart: true, osChart: true, complianceByOS: false, alerts: true, userCoverage: true, chartType: 'doughnut' };
+    let dashboardConfig = { complianceChart: true, osChart: true, complianceByOS: false, securityOverview: true, signinCharts: true, alerts: true, userCoverage: true, chartType: 'doughnut' };
 
     const ALLOWED_DOMAIN = 'jbknowledge.com';
 
@@ -640,7 +871,7 @@
           document.getElementById('userEmail').textContent = email;
           document.getElementById('userAvatar').textContent = email.charAt(0).toUpperCase();
           document.getElementById('loginPage').style.display = 'none';
-          document.getElementById('dashboard').classList.add('show');
+          document.getElementById('appRoot').classList.add('show');
           refreshAll();
         }
       } catch (e) {
@@ -652,15 +883,31 @@
 
     // Tabs
     document.querySelectorAll('.tab').forEach(tab => {
-      tab.addEventListener('click', () => {
-        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-        tab.classList.add('active');
-        document.getElementById(tab.dataset.tab).classList.add('active');
-        if (tab.dataset.tab === 'signins' && allSignins.length === 0) fetchSignins();
-        if (tab.dataset.tab === 'dashboard' && lastSummary) setTimeout(() => renderCharts(lastSummary), 50);
-      });
+      tab.addEventListener('click', () => switchTab(tab.dataset.tab));
     });
+
+    function switchTab(tabName) {
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+      const tabBtn = document.querySelector('.tab[data-tab="' + tabName + '"]');
+      if (tabBtn) tabBtn.classList.add('active');
+      // Only select tab-content elements (not the outer appRoot)
+      const content = document.querySelector('.tab-content#' + tabName);
+      if (content) content.classList.add('active');
+
+      if (tabName === 'signins' && allSignins.length === 0) fetchSignins();
+      if (tabName === 'dashboard') {
+        // Destroy all charts first — canvas may have been hidden and lost its dimensions
+        [complianceChart, osChart, complianceByOSChart, signinCountryChart, signinBlockedReasonChart].forEach(c => { try { if (c) c.destroy(); } catch(e){} });
+        complianceChart = osChart = complianceByOSChart = signinCountryChart = signinBlockedReasonChart = null;
+        // Wait for layout to stabilize before recreating
+        requestAnimationFrame(() => requestAnimationFrame(() => {
+          if (lastSummary) renderCharts(lastSummary);
+          if (dashboardConfig.complianceByOS && allDevices.length) renderComplianceByOSChart(allDevices);
+          if (dashboardSigninData && dashboardConfig.signinCharts !== false) renderSigninCharts(dashboardSigninData);
+        }));
+      }
+    }
 
     // Card filter
     function cardFilter(filter) {
@@ -724,7 +971,11 @@
     async function fetchSignins() {
       try {
         const filter = document.getElementById('signinFilter').value;
-        const res = await fetch('/api/signins?filter=' + filter + '&top=100');
+        const days = document.getElementById('signinDays') ? document.getElementById('signinDays').value : '7';
+        const top = document.getElementById('signinTop') ? document.getElementById('signinTop').value : '250';
+        const tbody = document.getElementById('signinsTable');
+        if (tbody) tbody.innerHTML = '<tr><td colspan="7" class="loading"><div class="spinner"></div><br>Loading sign-in logs (last ' + days + ' days)...</td></tr>';
+        const res = await fetch('/api/signins?filter=' + filter + '&days=' + days + '&top=' + top);
         const data = await res.json();
         if (data.error) {
           let errMsg = data.error;
@@ -750,11 +1001,21 @@
       }
     }
 
+    let activeSigninQuickFilter = 'all';
+    const SAFE_COUNTRIES = ['AR','US','BR','MX','CL','PE','CO','UY','PY','BO','EC','VE','CR','PA','CU','DO','GT','HN','NI','SV'];
+
     function filterSignins() {
       const search = document.getElementById('signinSearch').value.toLowerCase();
       const country = document.getElementById('signinCountry').value;
       const risk = document.getElementById('signinRisk').value;
       const outside = document.getElementById('signinOutsideCountry').checked;
+
+      // Pre-compute fail counts per user for bruteforce filter
+      const failsByUser = {};
+      if (activeSigninQuickFilter === 'bruteforce') {
+        allSignins.forEach(s => { if (s.isBlocked && s.userPrincipalName) failsByUser[s.userPrincipalName] = (failsByUser[s.userPrincipalName] || 0) + 1; });
+      }
+
       const filtered = allSignins.filter(s => {
         const matchSearch = !search || (s.userDisplayName || '').toLowerCase().includes(search) || (s.userPrincipalName || '').toLowerCase().includes(search);
         let matchCountry = true;
@@ -763,15 +1024,79 @@
           matchCountry = outside ? sc !== country : sc === country;
         }
         const matchRisk = !risk || s.riskLevel === risk;
-        return matchSearch && matchCountry && matchRisk;
+
+        let matchQuick = true;
+        if (activeSigninQuickFilter === 'blocked') matchQuick = s.isBlocked;
+        else if (activeSigninQuickFilter === 'success') matchQuick = !s.isBlocked;
+        else if (activeSigninQuickFilter === 'ca_blocked') matchQuick = s.caBlocked && s.caBlocked.length > 0;
+        else if (activeSigninQuickFilter === 'mfa') matchQuick = s.authenticationRequirement === 'multiFactorAuthentication';
+        else if (activeSigninQuickFilter === 'risky') matchQuick = s.riskLevel && s.riskLevel !== 'none' && s.riskLevel !== 'hidden';
+        else if (activeSigninQuickFilter === 'foreign') {
+          const cc = (s.location && s.location.countryOrRegion) || '';
+          matchQuick = cc && !SAFE_COUNTRIES.includes(cc);
+        }
+        else if (activeSigninQuickFilter === 'highrisk') matchQuick = s.riskLevel === 'high' || s.riskLevel === 'medium';
+        else if (activeSigninQuickFilter === 'bruteforce') matchQuick = (failsByUser[s.userPrincipalName] || 0) >= 3;
+        else if (activeSigninQuickFilter === 'malicious') matchQuick = (s.status && s.status.failureReason && s.status.failureReason.toLowerCase().includes('malicious'));
+
+        return matchSearch && matchCountry && matchRisk && matchQuick;
       });
       renderSignins(filtered);
+      renderSigninRecommendation(filtered);
+    }
+
+    function signinQuickFilter(type) {
+      activeSigninQuickFilter = type;
+      document.querySelectorAll('#signinSummary .card').forEach(c => c.classList.toggle('active-filter', c.dataset.sfilter === type));
+      filterSignins();
+    }
+
+    function renderSigninRecommendation(filtered) {
+      const box = document.getElementById('signinRecommendation');
+      if (!box) return;
+      let msg = '';
+      if (activeSigninQuickFilter === 'foreign' && filtered.length > 0) {
+        const users = [...new Set(filtered.map(s => s.userPrincipalName).filter(Boolean))];
+        msg = '<strong>&#127758; Sign-ins from foreign countries detected.</strong> ' + filtered.length + ' event(s) from ' + users.length + ' user(s). <em>Recommendation:</em> verify these are legitimate (travel, VPN). Consider enforcing location-based Conditional Access, blocking untrusted regions, or requiring MFA for non-trusted locations.';
+      } else if (activeSigninQuickFilter === 'bruteforce' && filtered.length > 0) {
+        const users = [...new Set(filtered.map(s => s.userPrincipalName).filter(Boolean))];
+        msg = '<strong>&#128273; Repeated sign-in failures detected.</strong> ' + users.length + ' user(s) with 3+ failed attempts. <em>Recommendation:</em> investigate possible credential attacks. Consider resetting passwords, enabling smart lockout, and forcing MFA re-registration.';
+      } else if (activeSigninQuickFilter === 'highrisk' && filtered.length > 0) {
+        msg = '<strong>&#9888; High-risk sign-ins detected.</strong> ' + filtered.length + ' risky sign-in(s). <em>Recommendation:</em> review Identity Protection in Entra ID, enforce password reset on risky users, and require MFA via Conditional Access.';
+      } else if (activeSigninQuickFilter === 'malicious' && filtered.length > 0) {
+        msg = '<strong>&#128680; Malicious IP activity.</strong> ' + filtered.length + ' event(s) from IPs flagged by Microsoft threat intelligence. <em>Recommendation:</em> immediately review affected accounts, check for data exfiltration, and revoke active sessions.';
+      } else if (activeSigninQuickFilter === 'ca_blocked' && filtered.length > 0) {
+        msg = '<strong>&#128203; CA-blocked sign-ins.</strong> Conditional Access policies successfully blocked ' + filtered.length + ' attempt(s). <em>Recommendation:</em> confirm these are unauthorized; check if legitimate users need exceptions.';
+      }
+      if (msg) { box.innerHTML = msg; box.style.display = 'block'; }
+      else box.style.display = 'none';
+    }
+
+    function filterAlertsByLevel(level) {
+      document.querySelectorAll('[data-afilter]').forEach(c => c.style.outline = c.dataset.afilter === level ? '3px solid #0078d4' : '');
+      const filtered = level === 'all' ? currentAlerts : currentAlerts.filter(a => a.level === level);
+      const html = filtered.length === 0
+        ? '<div style="text-align:center;padding:40px;color:#666;">No ' + level + ' alerts.</div>'
+        : filtered.map(a => {
+            const origIdx = currentAlerts.indexOf(a);
+            return '<div class="alert-item ' + a.level + '"' + (a.count ? ' onclick="openAlertDetail(' + origIdx + ')" style="cursor:pointer;"' : '') + '>' +
+              '<div><div class="alert-title">' + a.title + '</div><div class="alert-detail">' + a.detail + '</div></div>' +
+              (a.count ? '<div style="display:flex;align-items:center;gap:10px;"><div class="alert-count">' + a.count + '</div><span style="font-size:20px;color:#ccc;">&#8250;</span></div>' : '') +
+              '</div>';
+          }).join('');
+      document.getElementById('alertsList').innerHTML = html;
+    }
+
+    function scrollToPolicySection(section) {
+      const map = { compliance: 'compliancePoliciesSection', ca: 'caPoliciesSection', app: 'appPoliciesSection' };
+      const el = document.getElementById(map[section]);
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
 
     function renderSignins(signins) {
       const tbody = document.getElementById('signinsTable');
       if (!signins.length) { tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:40px;">No sign-in logs found</td></tr>'; return; }
-      tbody.innerHTML = signins.map(s => {
+      tbody.innerHTML = signins.map((s, i) => {
         const time = s.createdDateTime ? new Date(s.createdDateTime).toLocaleString() : '-';
         const statusClass = s.isBlocked ? 'blocked' : 'success';
         const statusText = s.isBlocked ? 'Blocked' : 'Success';
@@ -781,17 +1106,248 @@
         if (s.caBlocked.length) caPills += s.caBlocked.map(p => '<span class="ca-pill blocked">' + esc(p.displayName) + '</span>').join('');
         if (s.caApplied.length) caPills += s.caApplied.map(p => '<span class="ca-pill applied">' + esc(p.displayName) + '</span>').join('');
         if (!caPills) caPills = '<span style="color:#999;font-size:11px;">None</span>';
+        const rowCls = s.isBlocked ? ' class="signin-row-blocked"' : (s.riskLevel && s.riskLevel !== 'none' && s.riskLevel !== 'hidden') ? ' class="signin-row-risky"' : '';
 
-        return '<tr>' +
+        return '<tr' + rowCls + ' onclick="openSigninDetail(' + i + ')" style="cursor:pointer;" title="Click for full details">' +
           '<td>' + esc(time) + '</td>' +
           '<td><strong>' + esc(s.userDisplayName || '-') + '</strong><div class="signin-detail">' + esc(s.userPrincipalName || '') + '</div></td>' +
           '<td>' + esc(s.appDisplayName || '-') + '<div class="signin-detail">' + esc(s.clientAppUsed || '') + '</div></td>' +
           '<td><span class="badge ' + statusClass + '">' + statusText + '</span>' +
             (s.status.failureReason ? '<div class="signin-detail" style="color:#d13438;">' + esc(s.status.failureReason) + '</div>' : '') + '</td>' +
           '<td>' + esc(loc) + '<div class="signin-detail">IP: ' + esc(s.ipAddress || '-') + '</div></td>' +
-          '<td>' + esc(device) + '</td>' +
+          '<td>' + esc(device) + (s.deviceDetail.trustType ? '<div class="signin-detail">' + esc(s.deviceDetail.trustType) + '</div>' : '') + '</td>' +
           '<td>' + caPills + '</td></tr>';
       }).join('');
+    }
+
+    function openSigninDetail(index) {
+      const s = allSignins[index];
+      if (!s) return;
+      const statusText = s.isBlocked ? '&#128308; Blocked' : '&#128994; Success';
+      document.getElementById('signinModalTitle').textContent = s.userDisplayName || s.userPrincipalName || 'Unknown User';
+      document.getElementById('signinModalSubtitle').textContent = statusText + '  \u2022  ' + (s.createdDateTime ? new Date(s.createdDateTime).toLocaleString() : '-');
+
+      const riskCls = s.riskLevel === 'high' ? 'risk-high' : s.riskLevel === 'medium' ? 'risk-medium' : s.riskLevel === 'low' ? 'risk-low' : '';
+      const stCls = s.isBlocked ? 'val-blocked' : 'val-success';
+
+      let caPoliciesHtml = '';
+      if ((s.caBlocked && s.caBlocked.length) || (s.caApplied && s.caApplied.length)) {
+        caPoliciesHtml = '<div class="detail-section"><h4>Conditional Access Policies</h4>';
+        if (s.caBlocked && s.caBlocked.length) {
+          caPoliciesHtml += '<div style="font-size:11px;font-weight:700;color:#d13438;margin-bottom:6px;">BLOCKED BY</div>';
+          caPoliciesHtml += s.caBlocked.map(p => '<div class="detail-row"><span class="detail-label">' + esc(p.displayName) + '</span><span class="badge blocked">Blocked</span></div>').join('');
+        }
+        if (s.caApplied && s.caApplied.length) {
+          caPoliciesHtml += '<div style="font-size:11px;font-weight:700;color:#107c10;margin-top:10px;margin-bottom:6px;">APPLIED</div>';
+          caPoliciesHtml += s.caApplied.map(p => '<div class="detail-row"><span class="detail-label">' + esc(p.displayName) + '</span><span class="badge compliant">Applied</span></div>').join('');
+        }
+        caPoliciesHtml += '</div>';
+      }
+
+      document.getElementById('signinModalContent').innerHTML =
+        '<div class="detail-grid" style="margin-bottom:16px;">' +
+          '<div class="detail-section"><h4>User &amp; Status</h4>' +
+            '<div class="detail-row"><span class="detail-label">Display Name</span><span class="detail-value">' + esc(s.userDisplayName || '-') + '</span></div>' +
+            '<div class="detail-row"><span class="detail-label">UPN / Email</span><span class="detail-value">' + esc(s.userPrincipalName || '-') + '</span></div>' +
+            '<div class="detail-row"><span class="detail-label">Result</span><span class="detail-value ' + stCls + '">' + (s.isBlocked ? 'Blocked' : 'Success') + '</span></div>' +
+            '<div class="detail-row"><span class="detail-label">Failure Reason</span><span class="detail-value" style="color:#d13438;">' + esc((s.status && s.status.failureReason) || 'N/A') + '</span></div>' +
+            '<div class="detail-row"><span class="detail-label">Error Code</span><span class="detail-value">' + esc((s.status && s.status.errorCode) ? String(s.status.errorCode) : '0') + '</span></div>' +
+            '<div class="detail-row"><span class="detail-label">Additional Info</span><span class="detail-value" style="font-size:11px;">' + esc((s.status && s.status.additionalDetails) || '-') + '</span></div>' +
+          '</div>' +
+          '<div class="detail-section"><h4>Risk &amp; Security</h4>' +
+            '<div class="detail-row"><span class="detail-label">Risk Level</span><span class="detail-value ' + riskCls + '">' + esc(s.riskLevel || 'none') + '</span></div>' +
+            '<div class="detail-row"><span class="detail-label">Risk State</span><span class="detail-value">' + esc(s.riskState || '-') + '</span></div>' +
+            '<div class="detail-row"><span class="detail-label">CA Status</span><span class="detail-value">' + esc(s.conditionalAccessStatus || '-') + '</span></div>' +
+            '<div class="detail-row"><span class="detail-label">Auth Requirement</span><span class="detail-value">' + esc(s.authenticationRequirement || '-') + '</span></div>' +
+          '</div>' +
+        '</div>' +
+        '<div class="detail-grid" style="margin-bottom:16px;">' +
+          '<div class="detail-section"><h4>Location &amp; Network</h4>' +
+            '<div class="detail-row"><span class="detail-label">IP Address</span><span class="detail-value">' + esc(s.ipAddress || '-') + '</span></div>' +
+            '<div class="detail-row"><span class="detail-label">City</span><span class="detail-value">' + esc((s.location && s.location.city) || '-') + '</span></div>' +
+            '<div class="detail-row"><span class="detail-label">State / Region</span><span class="detail-value">' + esc((s.location && s.location.state) || '-') + '</span></div>' +
+            '<div class="detail-row"><span class="detail-label">Country</span><span class="detail-value">' + esc((s.location && s.location.countryOrRegion) || '-') + '</span></div>' +
+          '</div>' +
+          '<div class="detail-section"><h4>Device &amp; App</h4>' +
+            '<div class="detail-row"><span class="detail-label">Application</span><span class="detail-value">' + esc(s.appDisplayName || '-') + '</span></div>' +
+            '<div class="detail-row"><span class="detail-label">Client App</span><span class="detail-value">' + esc(s.clientAppUsed || '-') + '</span></div>' +
+            '<div class="detail-row"><span class="detail-label">OS</span><span class="detail-value">' + esc((s.deviceDetail && s.deviceDetail.operatingSystem) || '-') + '</span></div>' +
+            '<div class="detail-row"><span class="detail-label">Browser</span><span class="detail-value">' + esc((s.deviceDetail && s.deviceDetail.browser) || '-') + '</span></div>' +
+            '<div class="detail-row"><span class="detail-label">Device Name</span><span class="detail-value">' + esc((s.deviceDetail && s.deviceDetail.displayName) || '-') + '</span></div>' +
+            '<div class="detail-row"><span class="detail-label">Trust Type</span><span class="detail-value">' + esc((s.deviceDetail && s.deviceDetail.trustType) || '-') + '</span></div>' +
+            '<div class="detail-row"><span class="detail-label">Compliance</span><span class="detail-value">' + ((s.deviceDetail && s.deviceDetail.isCompliant !== undefined && s.deviceDetail.isCompliant !== null) ? (s.deviceDetail.isCompliant ? '<span style="color:#107c10;">Compliant</span>' : '<span style="color:#d13438;">Not Compliant</span>') : '-') + '</span></div>' +
+          '</div>' +
+        '</div>' +
+        caPoliciesHtml;
+
+      document.getElementById('signinModal').classList.add('show');
+    }
+
+    function closeSigninModal() { document.getElementById('signinModal').classList.remove('show'); }
+
+    async function fetchSigninsForDashboard() {
+      try {
+        const res = await fetch('/api/signins?top=100');
+        const data = await res.json();
+        if (data.error || !data.signIns) {
+          // Show security overview with message that data is unavailable
+          const sec = document.getElementById('dashSecurityOverview');
+          const note = document.getElementById('dashSecurityNote');
+          if (dashboardConfig.securityOverview !== false && sec) {
+            sec.style.display = 'block';
+            if (note) { note.style.display = 'block'; note.textContent = 'Sign-in data unavailable \u2014 requires Azure AD Premium P1/P2 license.'; }
+          }
+          return;
+        }
+        const signins = data.signIns;
+        dashboardSigninData = signins;
+
+        const blocked = signins.filter(s => s.isBlocked).length;
+        const risky = signins.filter(s => s.riskLevel && s.riskLevel !== 'none' && s.riskLevel !== 'hidden').length;
+        const locked = signins.filter(s => s.isBlocked && s.status && s.status.failureReason && s.status.failureReason.toLowerCase().includes('locked')).length;
+        const caBlocked = signins.filter(s => s.caBlocked && s.caBlocked.length > 0).length;
+
+        document.getElementById('secBlockedCount').textContent = blocked;
+        document.getElementById('secRiskyCount').textContent = risky;
+        document.getElementById('secLockedCount').textContent = locked;
+        document.getElementById('secCACount').textContent = caBlocked;
+
+        const note = document.getElementById('dashSecurityNote');
+        if (note) {
+          note.style.display = 'block';
+          note.textContent = 'Showing last ' + signins.length + ' sign-in events \u2014 click any card or alert for details.';
+        }
+
+        if (dashboardConfig.securityOverview !== false) {
+          document.getElementById('dashSecurityOverview').style.display = 'block';
+        }
+        if (dashboardConfig.signinCharts !== false) {
+          document.getElementById('dashSigninCharts').style.display = 'block';
+          renderSigninCharts(signins);
+        }
+
+        generateSecurityAlerts(signins);
+      } catch (e) {
+        // Sign-in data unavailable — skip silently (may need Azure AD Premium)
+      }
+    }
+
+    function renderSigninCharts(signins) {
+      if (!signins || !signins.length) return;
+      const countryCanvas = document.getElementById('signinCountryChart');
+      const reasonCanvas = document.getElementById('signinBlockedReasonChart');
+      if (!countryCanvas || !reasonCanvas) return;
+
+      // Sign-ins by country (top 10)
+      const countryCounts = {};
+      signins.forEach(s => {
+        const c = (s.location && s.location.countryOrRegion) || 'Unknown';
+        countryCounts[c] = (countryCounts[c] || 0) + 1;
+      });
+      const sortedCountries = Object.entries(countryCounts).sort((a,b) => b[1] - a[1]).slice(0, 10);
+      const countryLabels = sortedCountries.map(c => c[0]);
+      const countryData = sortedCountries.map(c => c[1]);
+      const countryColors = ['#0078d4', '#107c10', '#ff8c00', '#d13438', '#5c2d91', '#008272', '#f7630c', '#038387', '#8661c5', '#6b5b95'];
+
+      if (signinCountryChart) signinCountryChart.destroy();
+      signinCountryChart = new Chart(countryCanvas, {
+        type: 'doughnut',
+        data: { labels: countryLabels, datasets: [{ data: countryData, backgroundColor: countryColors.slice(0, countryLabels.length), borderWidth: 2, borderColor: '#fff' }] },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right', labels: { boxWidth: 12, font: { size: 11 } } }, tooltip: { callbacks: { label: ctx => ctx.label + ': ' + ctx.parsed + ' sign-in(s)' } } } }
+      });
+
+      // Blocked by reason
+      const blocked = signins.filter(s => s.isBlocked);
+      const reasons = { 'Wrong Password': 0, 'MFA Failed': 0, 'CA Blocked': 0, 'Account Locked': 0, 'Disabled Account': 0, 'Other': 0 };
+      blocked.forEach(s => {
+        const reason = ((s.status && s.status.failureReason) || '').toLowerCase();
+        const hasCA = s.caBlocked && s.caBlocked.length > 0;
+        if (hasCA || reason.includes('conditional')) reasons['CA Blocked']++;
+        else if (reason.includes('mfa') || reason.includes('multifactor') || reason.includes('strong auth') || reason.includes('multi-factor')) reasons['MFA Failed']++;
+        else if (reason.includes('locked') || reason.includes('lockout')) reasons['Account Locked']++;
+        else if (reason.includes('disabled') || reason.includes('revoked')) reasons['Disabled Account']++;
+        else if (reason.includes('invalid') || reason.includes('password') || reason.includes('credentials') || reason.includes('authenticationfailed') || reason.includes('50126')) reasons['Wrong Password']++;
+        else reasons['Other']++;
+      });
+      const rLabels = Object.keys(reasons).filter(k => reasons[k] > 0);
+      const rData = rLabels.map(k => reasons[k]);
+      const rColors = { 'Wrong Password': '#d13438', 'MFA Failed': '#ff8c00', 'CA Blocked': '#5c2a9d', 'Account Locked': '#8b0000', 'Disabled Account': '#666', 'Other': '#999' };
+
+      if (signinBlockedReasonChart) signinBlockedReasonChart.destroy();
+      if (rLabels.length) {
+        signinBlockedReasonChart = new Chart(reasonCanvas, {
+          type: 'bar',
+          data: { labels: rLabels, datasets: [{ label: 'Blocked Sign-ins', data: rData, backgroundColor: rLabels.map(l => rColors[l]), borderRadius: 6 }] },
+          options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } } }
+        });
+      } else {
+        // No blocked sign-ins — show empty state
+        const ctx = reasonCanvas.getContext('2d');
+        ctx.clearRect(0, 0, reasonCanvas.width, reasonCanvas.height);
+        ctx.fillStyle = '#107c10';
+        ctx.font = '14px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('\u2713 No blocked sign-ins in this period', reasonCanvas.width / 2, reasonCanvas.height / 2);
+      }
+    }
+
+    function openSecurityFilter(type) {
+      // Jump to alerts tab and scroll to the matching security alert
+      if (!securityAlerts.length) { showToast('No security alerts to view'); return; }
+      const match = securityAlerts.find(a => {
+        if (type === 'blocked') return a.title.includes('Blocked Sign-ins');
+        if (type === 'risky') return a.title.includes('Risky');
+        if (type === 'locked') return a.title.includes('Lockout');
+        if (type === 'ca') return a.title.includes('Blocked Sign-ins');
+        return false;
+      });
+      if (match) {
+        const idx = currentAlerts.indexOf(match);
+        if (idx >= 0) openAlertDetail(idx);
+      } else {
+        showToast('No events of this type in current period');
+      }
+    }
+
+    function generateSecurityAlerts(signins) {
+      const alerts = [];
+      const blocked = signins.filter(s => s.isBlocked);
+      if (blocked.length) alerts.push({ level: 'critical', title: '&#128272; Blocked Sign-ins', detail: blocked.length + ' sign-in(s) blocked', count: blocked.length, type: 'signin', signins: blocked });
+
+      const risky = signins.filter(s => s.riskLevel === 'high' || s.riskLevel === 'medium');
+      if (risky.length) alerts.push({ level: risky.some(s => s.riskLevel === 'high') ? 'critical' : 'warning', title: '&#9888; Risky Sign-ins', detail: risky.length + ' sign-in(s) flagged as risky', count: risky.length, type: 'signin', signins: risky });
+
+      const locked = signins.filter(s => s.isBlocked && s.status && s.status.failureReason && s.status.failureReason.toLowerCase().includes('locked'));
+      if (locked.length) alerts.push({ level: 'critical', title: '&#128274; Account Lockouts', detail: locked.length + ' account(s) locked out', count: locked.length, type: 'signin', signins: locked });
+
+      const failsByUser = {};
+      blocked.forEach(s => { const u = s.userPrincipalName || ''; if (u) failsByUser[u] = (failsByUser[u] || 0) + 1; });
+      const bruteForce = Object.entries(failsByUser).filter(([,c]) => c >= 3);
+      if (bruteForce.length) {
+        const bfSignins = blocked.filter(s => (failsByUser[s.userPrincipalName] || 0) >= 3);
+        alerts.push({ level: 'warning', title: '&#128273; Repeated Failures', detail: bruteForce.length + ' user(s) with 3+ failed sign-ins', count: bruteForce.length, type: 'signin', signins: bfSignins });
+      }
+
+      securityAlerts = alerts;
+      renderCombinedAlerts();
+    }
+
+    function renderCombinedAlerts() {
+      currentAlerts = [...securityAlerts, ...deviceAlerts];
+      if (!currentAlerts.length) currentAlerts = [{ level: 'info', title: 'All Clear', detail: 'No issues detected', count: 0, type: 'device', devices: [] }];
+      document.getElementById('criticalAlerts').textContent = currentAlerts.filter(a => a.level === 'critical').length;
+      document.getElementById('warningAlerts').textContent = currentAlerts.filter(a => a.level === 'warning').length;
+      document.getElementById('infoAlerts').textContent = currentAlerts.filter(a => a.level === 'info').length;
+      const allC = document.getElementById('allAlertsCount'); if (allC) allC.textContent = currentAlerts.filter(a => a.count).length;
+      const alertHtml = currentAlerts.map((a, i) =>
+        '<div class="alert-item ' + a.level + '"' + (a.count ? ' onclick="openAlertDetail(' + i + ')" style="cursor:pointer;"' : '') + '>' +
+        '<div><div class="alert-title">' + a.title + '</div><div class="alert-detail">' + a.detail + '</div></div>' +
+        (a.count ? '<div style="display:flex;align-items:center;gap:10px;"><div class="alert-count">' + a.count + '</div><span style="font-size:20px;color:#ccc;">&#8250;</span></div>' : '') +
+        '</div>'
+      ).join('');
+      document.getElementById('alertsList').innerHTML = alertHtml;
+      const dashEl = document.getElementById('dashAlertsList');
+      if (dashEl) dashEl.innerHTML = alertHtml;
     }
 
     function updateDeviceSummary(s) {
@@ -843,6 +1399,8 @@
       document.getElementById('cfg_complianceChart').checked = dashboardConfig.complianceChart;
       document.getElementById('cfg_osChart').checked = dashboardConfig.osChart;
       document.getElementById('cfg_complianceByOS').checked = dashboardConfig.complianceByOS;
+      document.getElementById('cfg_securityOverview').checked = dashboardConfig.securityOverview !== false;
+      document.getElementById('cfg_signinCharts').checked = dashboardConfig.signinCharts !== false;
       document.getElementById('cfg_alerts').checked = dashboardConfig.alerts;
       document.getElementById('cfg_userCoverage').checked = dashboardConfig.userCoverage;
       const ct = document.querySelector('input[name="cfg_chartType"][value="' + dashboardConfig.chartType + '"]');
@@ -854,6 +1412,8 @@
       dashboardConfig.complianceChart = document.getElementById('cfg_complianceChart').checked;
       dashboardConfig.osChart = document.getElementById('cfg_osChart').checked;
       dashboardConfig.complianceByOS = document.getElementById('cfg_complianceByOS').checked;
+      dashboardConfig.securityOverview = document.getElementById('cfg_securityOverview').checked;
+      dashboardConfig.signinCharts = document.getElementById('cfg_signinCharts').checked;
       dashboardConfig.alerts = document.getElementById('cfg_alerts').checked;
       dashboardConfig.userCoverage = document.getElementById('cfg_userCoverage').checked;
       const ct = document.querySelector('input[name="cfg_chartType"]:checked');
@@ -866,6 +1426,13 @@
       document.getElementById('dashOsCard').style.display = dashboardConfig.osChart ? 'block' : 'none';
       document.getElementById('dashComplianceByOSSection').style.display = dashboardConfig.complianceByOS ? 'block' : 'none';
       const dsp = v => v ? '' : 'none';
+      // Security overview only shows if data was loaded AND config enabled
+      const secEl = document.getElementById('dashSecurityOverview');
+      if (secEl && !dashboardConfig.securityOverview) secEl.style.display = 'none';
+      else if (secEl && dashboardConfig.securityOverview && dashboardSigninData) secEl.style.display = 'block';
+      const scEl = document.getElementById('dashSigninCharts');
+      if (scEl && !dashboardConfig.signinCharts) scEl.style.display = 'none';
+      else if (scEl && dashboardConfig.signinCharts && dashboardSigninData) { scEl.style.display = 'block'; setTimeout(() => renderSigninCharts(dashboardSigninData), 50); }
       document.getElementById('dashAlertsTitle').style.display = dsp(dashboardConfig.alerts);
       document.getElementById('dashAlertsList').style.display = dsp(dashboardConfig.alerts);
       document.getElementById('dashUserCoverageTitle').style.display = dsp(dashboardConfig.userCoverage);
@@ -1016,36 +1583,51 @@
     function generateAlerts(devices) {
       const rules = loadAlertRules(); const alerts = [];
       const nc = devices.filter(d => d.complianceState === 'noncompliant');
-      if (rules[0] && nc.length) alerts.push({ level: 'critical', title: 'Non-Compliant Devices', detail: nc.length + ' device(s) not compliant', count: nc.length, devices: nc });
+      if (rules[0] && nc.length) alerts.push({ level: 'critical', title: '&#128203; Non-Compliant Devices', detail: nc.length + ' device(s) not compliant', count: nc.length, type: 'device', devices: nc });
       const st = devices.filter(d => d.daysSinceSync > 7 && d.daysSinceSync <= 30);
-      if (rules[1] && st.length) alerts.push({ level: 'warning', title: 'Stale Devices (7+ days)', detail: st.length + ' device(s) not synced recently', count: st.length, devices: st });
+      if (rules[1] && st.length) alerts.push({ level: 'warning', title: '&#128336; Stale Devices (7+ days)', detail: st.length + ' device(s) not synced recently', count: st.length, type: 'device', devices: st });
       const gr = devices.filter(d => d.graceStatus === 'grace_period');
-      if (rules[2] && gr.length) alerts.push({ level: 'info', title: 'Grace Period Devices', detail: gr.length + ' device(s) in grace period', count: gr.length, devices: gr });
+      if (rules[2] && gr.length) alerts.push({ level: 'info', title: '&#9203; Grace Period Devices', detail: gr.length + ' device(s) in grace period', count: gr.length, type: 'device', devices: gr });
       const ne = devices.filter(d => d.isEncrypted === false);
-      if (rules[3] && ne.length) alerts.push({ level: 'warning', title: 'Encryption Not Enabled', detail: ne.length + ' device(s) without encryption', count: ne.length, devices: ne });
+      if (rules[3] && ne.length) alerts.push({ level: 'warning', title: '&#128275; Encryption Not Enabled', detail: ne.length + ' device(s) without encryption', count: ne.length, type: 'device', devices: ne });
       const vs = devices.filter(d => d.daysSinceSync > 30);
-      if (rules[4] && vs.length) alerts.push({ level: 'critical', title: 'Abandoned (30+ days)', detail: vs.length + ' device(s) not synced in 30+ days', count: vs.length, devices: vs });
-      if (!alerts.length) alerts.push({ level: 'info', title: 'All Clear', detail: 'No issues detected', count: 0, devices: [] });
-      currentAlerts = alerts;
-      document.getElementById('criticalAlerts').textContent = alerts.filter(a => a.level === 'critical').length;
-      document.getElementById('warningAlerts').textContent = alerts.filter(a => a.level === 'warning').length;
-      document.getElementById('infoAlerts').textContent = alerts.filter(a => a.level === 'info').length;
-      const alertHtml = alerts.map((a, i) =>
-        '<div class="alert-item ' + a.level + '"' + (a.count ? ' onclick="openAlertDetail(' + i + ')" style="cursor:pointer;"' : '') + '>' +
-        '<div><div class="alert-title">' + a.title + '</div><div class="alert-detail">' + a.detail + '</div></div>' +
-        (a.count ? '<div style="display:flex;align-items:center;gap:10px;"><div class="alert-count">' + a.count + '</div><span style="font-size:20px;color:#ccc;">›</span></div>' : '') +
-        '</div>'
-      ).join('');
-      document.getElementById('alertsList').innerHTML = alertHtml;
-      const dashAlertsEl = document.getElementById('dashAlertsList');
-      if (dashAlertsEl) dashAlertsEl.innerHTML = alertHtml;
+      if (rules[4] && vs.length) alerts.push({ level: 'critical', title: '&#128683; Abandoned (30+ days)', detail: vs.length + ' device(s) not synced in 30+ days', count: vs.length, type: 'device', devices: vs });
+      deviceAlerts = alerts;
+      renderCombinedAlerts();
     }
 
     function openAlertDetail(index) {
       const alert = currentAlerts[index];
       if (!alert) return;
-      document.getElementById('alertModalTitle').textContent = alert.title;
+      document.getElementById('alertModalTitle').innerHTML = alert.title;
       document.getElementById('alertModalSubtitle').textContent = alert.detail;
+
+      if (alert.type === 'signin') {
+        const sigs = alert.signins || [];
+        if (!sigs.length) {
+          document.getElementById('alertModalContent').innerHTML = '<div style="text-align:center;padding:30px;color:#666;">No sign-ins in this category</div>';
+        } else {
+          document.getElementById('alertModalContent').innerHTML =
+            '<p style="font-size:12px;color:#666;margin-bottom:12px;">Click any row to see full sign-in details.</p>' +
+            '<div style="overflow-x:auto;"><table><thead><tr><th>Time</th><th>User</th><th>Status / Reason</th><th>Location</th><th>IP Address</th><th>Risk</th></tr></thead><tbody>' +
+            sigs.map(s => {
+              const globalIdx = allSignins.indexOf(s);
+              const clickable = globalIdx >= 0 ? ' onclick="closeAlertModal();setTimeout(()=>openSigninDetail(' + globalIdx + '),120)" style="cursor:pointer;"' : '';
+              const time = s.createdDateTime ? new Date(s.createdDateTime).toLocaleString() : '-';
+              const loc = [s.location && s.location.city, s.location && s.location.countryOrRegion].filter(Boolean).join(', ') || '-';
+              const riskBadge = (s.riskLevel && s.riskLevel !== 'none' && s.riskLevel !== 'hidden') ? '<span class="badge" style="background:#fff4ce;color:#ff8c00;">' + esc(s.riskLevel) + '</span>' : '<span style="color:#999;font-size:11px;">none</span>';
+              return '<tr' + clickable + '><td style="font-size:11px;">' + esc(time) + '</td>' +
+                '<td><strong>' + esc(s.userDisplayName || '-') + '</strong><br><span style="font-size:11px;color:#666;">' + esc(s.userPrincipalName || '') + '</span></td>' +
+                '<td><span class="badge blocked">Blocked</span>' + (s.status && s.status.failureReason ? '<br><span style="font-size:11px;color:#d13438;">' + esc(s.status.failureReason) + '</span>' : '') + '</td>' +
+                '<td style="font-size:12px;">' + esc(loc) + '</td>' +
+                '<td style="font-size:12px;">' + esc(s.ipAddress || '-') + '</td>' +
+                '<td>' + riskBadge + '</td></tr>';
+            }).join('') + '</tbody></table></div>';
+        }
+        document.getElementById('alertModal').classList.add('show');
+        return;
+      }
+
       const devs = alert.devices || [];
       if (!devs.length) {
         document.getElementById('alertModalContent').innerHTML = '<div style="text-align:center;padding:30px;color:#666;">No devices in this category</div>';
@@ -1106,19 +1688,56 @@
         document.getElementById('dashCoverage').textContent = (s.coveragePercent || 0) + '%';
         document.getElementById('dashUnassigned').textContent = s.unassignedDevices || 0;
 
-        const notEnrolled = data.usersWithoutDevices || [];
-        if (!notEnrolled.length) {
-          document.getElementById('notEnrolledTable').innerHTML = '<tr><td colspan="3" style="text-align:center;padding:20px;color:#107c10;">All users have at least one enrolled device.</td></tr>';
-          return;
-        }
-        document.getElementById('notEnrolledTable').innerHTML = notEnrolled.map(u =>
-          '<tr><td><strong>' + esc(u.displayName || '-') + '</strong></td>' +
-          '<td style="color:#666;font-size:12px;">' + esc(u.userPrincipalName || '-') + '</td>' +
-          '<td><span class="badge" style="background:#fff4ce;color:#ff8c00;">Not Enrolled</span></td></tr>'
-        ).join('');
+        allNotEnrolledUsers = data.usersWithoutDevices || [];
+        renderNotEnrolledTable();
       } catch (e) {
         document.getElementById('notEnrolledTable').innerHTML = '<tr><td colspan="3" style="text-align:center;padding:20px;color:#d13438;">Error: ' + esc(e.message) + '</td></tr>';
       }
+    }
+
+    function renderNotEnrolledTable() {
+      const tbody = document.getElementById('notEnrolledTable');
+      const searchEl = document.getElementById('notEnrolledSearch');
+      const search = searchEl ? searchEl.value.toLowerCase().trim() : '';
+      const filtered = search ? allNotEnrolledUsers.filter(u =>
+        (u.displayName || '').toLowerCase().includes(search) ||
+        (u.userPrincipalName || '').toLowerCase().includes(search)
+      ) : allNotEnrolledUsers;
+
+      const countEl = document.getElementById('notEnrolledCount');
+      if (countEl) countEl.textContent = '(' + filtered.length + (search ? ' of ' + allNotEnrolledUsers.length : '') + ')';
+
+      if (!filtered.length) {
+        tbody.innerHTML = search
+          ? '<tr><td colspan="3" style="text-align:center;padding:20px;color:#666;">No users match your search.</td></tr>'
+          : '<tr><td colspan="3" style="text-align:center;padding:20px;color:#107c10;">All users have at least one enrolled device.</td></tr>';
+        document.getElementById('notEnrolledToggleWrap').style.display = 'none';
+        return;
+      }
+
+      const LIMIT = 5;
+      const visible = showAllNotEnrolled ? filtered : filtered.slice(0, LIMIT);
+      tbody.innerHTML = visible.map(u =>
+        '<tr><td><strong>' + esc(u.displayName || '-') + '</strong></td>' +
+        '<td style="color:#666;font-size:12px;">' + esc(u.userPrincipalName || '-') + '</td>' +
+        '<td><span class="badge" style="background:#fff4ce;color:#ff8c00;">Not Enrolled</span></td></tr>'
+      ).join('');
+
+      const toggleWrap = document.getElementById('notEnrolledToggleWrap');
+      const toggleBtn = document.getElementById('notEnrolledToggleBtn');
+      if (filtered.length > LIMIT) {
+        toggleWrap.style.display = 'block';
+        toggleBtn.textContent = showAllNotEnrolled
+          ? '\u2191 Show less'
+          : '\u2193 Show all (' + filtered.length + ' users)';
+      } else {
+        toggleWrap.style.display = 'none';
+      }
+    }
+
+    function toggleShowAllNotEnrolled() {
+      showAllNotEnrolled = !showAllNotEnrolled;
+      renderNotEnrolledTable();
     }
 
     function populateCountryFilter(signins) {
@@ -1249,14 +1868,105 @@
       const btn = document.getElementById('refreshBtn'); btn.classList.add('spinning');
       document.getElementById('lastUpdated').textContent = 'Loading...';
       await Promise.all([fetchDevices(), fetchPolicies(), fetchUserCoverage()]);
+      fetchSigninsForDashboard(); // non-blocking — needs Azure AD Premium
       document.getElementById('lastUpdated').textContent = new Date().toLocaleTimeString();
       btn.classList.remove('spinning');
     }
 
     document.getElementById('dashConfigModal').addEventListener('click', function(e) { if (e.target === this) closeDashboardConfig(); });
+    document.getElementById('signinModal').addEventListener('click', function(e) { if (e.target === this) closeSigninModal(); });
+
+    function saveNotifySettings() {
+      const settings = {
+        recipients: document.getElementById('notifyRecipients').value.trim(),
+        sender: document.getElementById('notifySender').value.trim(),
+        nonCompliant: document.getElementById('notifyNonCompliant').checked,
+        stale: document.getElementById('notifyStale').checked,
+        blocked: document.getElementById('notifyBlocked').checked,
+        risky: document.getElementById('notifyRisky').checked,
+        locked: document.getElementById('notifyLocked').checked
+      };
+      localStorage.setItem('notifySettings', JSON.stringify(settings));
+      document.getElementById('notifyStatus').textContent = 'Settings saved.';
+      setTimeout(() => document.getElementById('notifyStatus').textContent = '', 3000);
+      showToast('Notification settings saved');
+    }
+
+    function loadNotifySettings() {
+      try {
+        const s = localStorage.getItem('notifySettings');
+        if (!s) return;
+        const cfg = JSON.parse(s);
+        if (cfg.recipients) document.getElementById('notifyRecipients').value = cfg.recipients;
+        if (cfg.sender) document.getElementById('notifySender').value = cfg.sender;
+        document.getElementById('notifyNonCompliant').checked = cfg.nonCompliant !== false;
+        document.getElementById('notifyStale').checked = cfg.stale !== false;
+        if (cfg.blocked !== undefined) document.getElementById('notifyBlocked').checked = cfg.blocked;
+        if (cfg.risky !== undefined) document.getElementById('notifyRisky').checked = cfg.risky;
+        if (cfg.locked !== undefined) document.getElementById('notifyLocked').checked = cfg.locked;
+      } catch(e) {}
+    }
+
+    async function sendTestNotification() {
+      const recipients = document.getElementById('notifyRecipients').value.trim();
+      const sender = document.getElementById('notifySender').value.trim();
+      const statusEl = document.getElementById('notifyStatus');
+      if (!recipients) { showToast('Enter at least one recipient email'); return; }
+      if (!sender) { showToast('Enter a sender email'); return; }
+      statusEl.textContent = 'Sending...';
+      try {
+        const checks = {
+          nonCompliant: document.getElementById('notifyNonCompliant').checked,
+          stale: document.getElementById('notifyStale').checked,
+          blocked: document.getElementById('notifyBlocked').checked,
+          risky: document.getElementById('notifyRisky').checked,
+          locked: document.getElementById('notifyLocked').checked
+        };
+        const res = await fetch('/api/notify', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ recipients: recipients.split('\n').map(e => e.trim()).filter(Boolean), sender, checks })
+        });
+        const data = await res.json();
+        if (data.success) {
+          statusEl.textContent = 'Email sent successfully!';
+          showToast('Alert email sent');
+        } else {
+          statusEl.textContent = 'Error: ' + (data.error || 'Unknown');
+          showToast('Error: ' + (data.error || 'Unknown').substring(0, 80));
+        }
+      } catch(e) {
+        statusEl.textContent = 'Error: ' + e.message;
+        showToast('Error: ' + e.message.substring(0, 80));
+      }
+      setTimeout(() => statusEl.textContent = '', 5000);
+    }
+
+    function openWhatsNew() {
+      document.getElementById('whatsNewModal').classList.add('show');
+      localStorage.setItem('whatsNewSeen', APP_VERSION);
+      const badge = document.getElementById('newBadge');
+      if (badge) badge.style.display = 'none';
+    }
+    function closeWhatsNew() { document.getElementById('whatsNewModal').classList.remove('show'); }
+
+    function initVersionInfo() {
+      const vEl = document.getElementById('appVersion');
+      if (vEl) vEl.textContent = APP_VERSION + ' (build ' + APP_BUILD_DATE + ')';
+      // Show "!" badge if user has not seen this version's What's New
+      const seen = localStorage.getItem('whatsNewSeen');
+      if (seen !== APP_VERSION) {
+        const badge = document.getElementById('newBadge');
+        if (badge) badge.style.display = 'inline-flex';
+      }
+    }
+
+    document.getElementById('whatsNewModal').addEventListener('click', function(e) { if (e.target === this) closeWhatsNew(); });
 
     loadAlertRules();
     loadDashboardConfig();
+    loadNotifySettings();
+    initVersionInfo();
     checkAuth();
   </script>
 </body>
