@@ -243,7 +243,7 @@
       <h1><div class="lock-icon">&#128274;</div> Intune Compliance Dashboard <span class="subtitle">JBKnowledge - Information Technology</span></h1>
     </div>
     <div class="login-body">
-      <div class="login-card">
+      <div class="login-card" id="loginCard">
         <div class="login-lock">&#128274;</div>
         <h2>Intune Compliance Dashboard</h2>
         <p class="login-desc">Sign in with your JBKnowledge administrator account to monitor device compliance, manage policies, review sign-in logs, and export reports across your organization.</p>
@@ -613,6 +613,12 @@
     let editedSettings = {};
     let dashboardConfig = { complianceChart: true, osChart: true, complianceByOS: false, alerts: true, userCoverage: true, chartType: 'doughnut' };
 
+    const ALLOWED_DOMAIN = 'jbknowledge.com';
+
+    function isAllowedUser(email) {
+      return email.toLowerCase().endsWith('@' + ALLOWED_DOMAIN);
+    }
+
     // Auth check
     async function checkAuth() {
       try {
@@ -620,7 +626,17 @@
         const data = await res.json();
         if (data.clientPrincipal) {
           const user = data.clientPrincipal;
-          const email = user.userDetails || user.userId || '';
+          const email = (user.userDetails || user.userId || '').toLowerCase();
+
+          if (!isAllowedUser(email)) {
+            document.getElementById('loginCard').innerHTML =
+              '<div style="font-size:52px;margin-bottom:16px;">&#128683;</div>' +
+              '<h2 style="color:#d13438;margin-bottom:12px;">Access Denied</h2>' +
+              '<p class="login-desc">The account <strong>' + email + '</strong> is not authorized to access this dashboard.<br>Only <strong>@jbknowledge.com</strong> accounts are permitted.</p>' +
+              '<a href="/.auth/logout?post_logout_redirect_uri=/" class="ms-login-btn" style="background:#fde7e9;border-color:#d13438;color:#d13438;margin-top:8px;">&#8617; Sign out and use a different account</a>';
+            return;
+          }
+
           document.getElementById('userEmail').textContent = email;
           document.getElementById('userAvatar').textContent = email.charAt(0).toUpperCase();
           document.getElementById('loginPage').style.display = 'none';
@@ -632,7 +648,7 @@
       }
     }
 
-    function logout() { window.location.href = '/.auth/logout'; }
+    function logout() { window.location.href = '/.auth/logout?post_logout_redirect_uri=/'; }
 
     // Tabs
     document.querySelectorAll('.tab').forEach(tab => {
