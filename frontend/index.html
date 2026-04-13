@@ -537,6 +537,7 @@
           <button class="config-btn" onclick="signinQuickFilter('all')" style="background:#0078d4;color:white;border-color:#0078d4;">&#8634; Reset</button>
         </div>
         <div id="signinRecommendation" style="display:none;background:#fff4ce;border-left:4px solid #ff8c00;padding:12px 16px;border-radius:8px;margin-bottom:16px;font-size:13px;"></div>
+        <div id="signinDiagnostics" style="display:none;background:#eef6fc;border-left:4px solid #0078d4;padding:10px 14px;border-radius:6px;margin-bottom:12px;font-size:12px;color:#333;font-family:monospace;"></div>
         <div class="table-container">
           <div class="table-header">
             <h3>Recent Sign-in Activity</h3>
@@ -979,6 +980,26 @@
         if (tbody) tbody.innerHTML = '<tr><td colspan="7" class="loading"><div class="spinner"></div><br>Loading sign-in logs (last ' + days + ' days)...</td></tr>';
         const res = await fetch('/api/signins?filter=' + filter + '&days=' + days + '&top=' + top);
         const data = await res.json();
+        if (data.diagnostics) {
+          console.log('[Sign-ins Diagnostics]', data.diagnostics);
+          window.lastSigninDiagnostics = data.diagnostics;
+          const d = data.diagnostics;
+          const diagEl = document.getElementById('signinDiagnostics');
+          if (diagEl) {
+            const oldest = d.oldestRecord ? new Date(d.oldestRecord).toLocaleString() : 'n/a';
+            const newest = d.newestRecord ? new Date(d.newestRecord).toLocaleString() : 'n/a';
+            diagEl.innerHTML =
+              '<strong>Diagnostics:</strong> ' +
+              'Requested last ' + d.requestedDays + ' days, top ' + d.requestedTop + ' &nbsp;|&nbsp; ' +
+              'Pages fetched: <strong>' + d.pagesFetched + '</strong> &nbsp;|&nbsp; ' +
+              'Records: <strong>' + d.rawCount + '</strong> &nbsp;|&nbsp; ' +
+              'Oldest: <strong>' + oldest + '</strong> &nbsp;|&nbsp; ' +
+              'Newest: <strong>' + newest + '</strong> &nbsp;|&nbsp; ' +
+              'More available: <strong>' + (d.hadMorePages ? 'YES (hit cap)' : 'no') + '</strong><br>' +
+              '<span style="color:#666;">Filter sent: ' + d.filterSentToGraph + '</span>';
+            diagEl.style.display = 'block';
+          }
+        }
         if (data.error) {
           let errMsg = data.error;
           let hint = 'Make sure AuditLog.Read.All permission is granted with admin consent.';

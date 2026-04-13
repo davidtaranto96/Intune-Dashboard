@@ -47,13 +47,13 @@ module.exports = async function (context, req) {
     }
 
     // Paginate until we hit `top` results or exhaust the time window.
-    // This is the key fix: without pagination, $top=100 + high-volume tenants returned
-    // only today's records because the first page was already saturated.
     const signIns = [];
-    let url = `https://graph.microsoft.com/v1.0${endpoint}`;
+    const initialUrl = `https://graph.microsoft.com/v1.0${endpoint}`;
+    let url = initialUrl;
     const token = await getAccessToken();
     let pages = 0;
     const MAX_PAGES = 25; // safety cap: up to 25,000 records
+    let hadNextLink = false;
 
     while (url && signIns.length < top && pages < MAX_PAGES) {
       const resp = await fetch(url, {
@@ -66,11 +66,26 @@ module.exports = async function (context, req) {
       const pageData = await resp.json();
       if (pageData.value) signIns.push(...pageData.value);
       url = pageData['@odata.nextLink'] || null;
+      if (url) hadNextLink = true;
       pages++;
     }
 
     // Trim to requested top
     if (signIns.length > top) signIns.length = top;
+
+    // Diagnostics — helps debug retention / filter issues
+    const timestamps = signIns.map(s => s.createdDateTime).filter(Boolean).sort();
+    const diagnostics = {
+      requestedDays: days,
+      requestedTop: top,
+      pagesFetched: pages,
+      rawCount: signIns.length,
+      oldestRecord: timestamps[0] || null,
+      newestRecord: timestamps[timestamps.length - 1] || null,
+      hadMorePages: !!url, // loop ended but nextLink still existed (hit MAX_PAGES or top)
+      filterSentToGraph: filters.join(' and ') || '(none)',
+      endpoint: endpoint
+    };
 
     // Enrich with summaries
     const enriched = signIns.map(s => {
@@ -135,7 +150,7 @@ module.exports = async function (context, req) {
     context.res = {
       status: 200,
       headers: { 'Content-Type': 'application/json' },
-      body: { summary, signIns: enriched }
+      body: { summary, signIns: enriched, diagnostics }
     };
   } catch (error) {
     context.res = {
