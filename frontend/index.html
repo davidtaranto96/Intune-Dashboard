@@ -553,7 +553,7 @@
             </div>
           </div>
           <div id="insightsSummaryBar" style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:16px;"></div>
-          <div id="insightsGrid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;"></div>
+          <div id="insightsGrid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;"></div>
         </div>
         <div class="table-container">
           <div class="table-header">
@@ -1170,9 +1170,8 @@
       grid.innerHTML = [
         card('Cuentas Más Comprometidas', '#b4009e', '&#128680;', topCompromised, (u, i) => detailRow(u, i, 'risk score', u.score)),
         card('Más Bloqueos', '#d13438', '&#128272;', topBlocked, (u, i) => detailRow(u, i, 'blocks', u.blocked)),
-        card('Brute Force Sospechoso (3+ fails)', '#8b0000', '&#128274;', topBrute, (u, i) => detailRow(u, i, 'fails', u.blocked)),
         card('Más Logins Extranjeros', '#ff8c00', '&#127758;', topForeign, (u, i) => detailRow(u, i, 'foreign', u.foreign,
-          '<div style="font-size:10px;color:#666;margin-top:1px;">IPs: ' + u.ips.slice(0,3).join(', ') + (u.ips.length > 3 ? ' +' + (u.ips.length-3) : '') + '</div>'
+          '<div style="font-size:9px;color:#666;margin-top:1px;">IPs: ' + u.ips.slice(0,3).join(', ') + (u.ips.length > 3 ? ' +' + (u.ips.length-3) : '') + '</div>'
         ))
       ].filter(Boolean).join('');
 
