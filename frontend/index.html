@@ -538,12 +538,22 @@
         </div>
         <div id="signinRecommendation" style="display:none;background:#fff4ce;border-left:4px solid #ff8c00;padding:12px 16px;border-radius:8px;margin-bottom:16px;font-size:13px;"></div>
         <div id="signinDiagnostics" style="display:none;background:#eef6fc;border-left:4px solid #0078d4;padding:10px 14px;border-radius:6px;margin-bottom:12px;font-size:12px;color:#333;font-family:monospace;"></div>
-        <div id="smartInsights" style="display:none;background:white;border-radius:12px;padding:20px;margin-bottom:16px;box-shadow:0 1px 3px rgba(0,0,0,0.08);">
-          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
-            <h3 style="margin:0;font-size:16px;color:#201f1e;">&#128200; Smart Insights — Riesgo por cuenta</h3>
-            <button onclick="exportInsightsCSV()" style="background:#107c10;color:white;border:none;padding:6px 12px;border-radius:6px;font-size:12px;cursor:pointer;">&#8595; Export</button>
+        <div id="smartInsights" style="display:none;background:white;border-radius:14px;padding:24px;margin-bottom:20px;box-shadow:0 2px 8px rgba(0,0,0,0.10);">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;flex-wrap:wrap;gap:10px;">
+            <h3 style="margin:0;font-size:18px;color:#201f1e;">&#128200; Smart Insights — Riesgo por cuenta</h3>
+            <div style="display:flex;align-items:center;gap:8px;">
+              <label style="font-size:12px;color:#666;">Mostrar:</label>
+              <select id="insightsCount" onchange="renderSmartInsights(allSignins)" style="padding:4px 8px;border-radius:6px;border:1px solid #d2d0ce;font-size:12px;">
+                <option value="5">Top 5</option>
+                <option value="10" selected>Top 10</option>
+                <option value="15">Top 15</option>
+                <option value="20">Top 20</option>
+              </select>
+              <button onclick="exportInsightsCSV()" style="background:#107c10;color:white;border:none;padding:6px 14px;border-radius:6px;font-size:12px;cursor:pointer;">&#8595; Export CSV</button>
+            </div>
           </div>
-          <div id="insightsGrid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;"></div>
+          <div id="insightsSummaryBar" style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:16px;"></div>
+          <div id="insightsGrid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:18px;"></div>
         </div>
         <div class="table-container">
           <div class="table-header">
@@ -1037,12 +1047,16 @@
     const SAFE_COUNTRIES = ['AR','US','BR','MX','CL','PE','CO','UY','PY','BO','EC','VE','CR','PA','CU','DO','GT','HN','NI','SV'];
 
     let lastInsights = null;
+    let allInsightUsers = [];
 
     function renderSmartInsights(signins) {
       const container = document.getElementById('smartInsights');
       const grid = document.getElementById('insightsGrid');
+      const summaryBar = document.getElementById('insightsSummaryBar');
       if (!container || !grid) return;
       if (!signins || !signins.length) { container.style.display = 'none'; return; }
+
+      const showCount = parseInt((document.getElementById('insightsCount') || {}).value) || 10;
 
       // Aggregate per user (UPN)
       const byUser = {};
@@ -1051,62 +1065,115 @@
         if (!byUser[upn]) {
           byUser[upn] = {
             upn, name: s.userDisplayName || upn,
-            total: 0, blocked: 0, risky: 0, foreign: 0, malicious: 0, locked: 0,
-            countries: new Set(), ips: new Set(),
-            lastFail: null
+            total: 0, blocked: 0, success: 0, risky: 0, foreign: 0, malicious: 0, locked: 0,
+            countries: new Set(), foreignCountries: new Set(), ips: new Set(),
+            apps: new Set(), lastFail: null, lastActivity: null,
+            failReasons: {}
           };
         }
         const u = byUser[upn];
         u.total++;
-        if (s.isBlocked) u.blocked++;
+        if (s.isBlocked) { u.blocked++; } else { u.success++; }
         if (s.riskLevel && s.riskLevel !== 'none' && s.riskLevel !== 'hidden') u.risky++;
         const cc = s.location && s.location.countryOrRegion;
-        if (cc && !SAFE_COUNTRIES.includes(cc)) u.foreign++;
+        if (cc && !SAFE_COUNTRIES.includes(cc)) { u.foreign++; u.foreignCountries.add(cc); }
         if (cc) u.countries.add(cc);
         if (s.ipAddress) u.ips.add(s.ipAddress);
+        if (s.appDisplayName) u.apps.add(s.appDisplayName);
         const reason = (s.status && s.status.failureReason || '').toLowerCase();
         if (reason.includes('malicious')) u.malicious++;
         if (reason.includes('locked')) u.locked++;
-        if (s.isBlocked && s.createdDateTime) u.lastFail = s.createdDateTime;
+        if (s.isBlocked && reason) u.failReasons[reason] = (u.failReasons[reason] || 0) + 1;
+        if (s.isBlocked && s.createdDateTime && (!u.lastFail || s.createdDateTime > u.lastFail)) u.lastFail = s.createdDateTime;
+        if (s.createdDateTime && (!u.lastActivity || s.createdDateTime > u.lastActivity)) u.lastActivity = s.createdDateTime;
       });
 
-      // Compute risk score: weighted
+      // Compute risk score: weighted + risk level label
       const users = Object.values(byUser).map(u => {
         const score = u.blocked * 2 + u.risky * 3 + u.foreign * 2 + u.malicious * 5 + u.locked * 4;
-        return { ...u, score, countries: Array.from(u.countries), ips: Array.from(u.ips) };
+        const blockRate = u.total > 0 ? Math.round(u.blocked / u.total * 100) : 0;
+        let level, levelColor;
+        if (score >= 100) { level = 'CRITICAL'; levelColor = '#d13438'; }
+        else if (score >= 50) { level = 'HIGH'; levelColor = '#e74c00'; }
+        else if (score >= 20) { level = 'MEDIUM'; levelColor = '#ff8c00'; }
+        else if (score > 0) { level = 'LOW'; levelColor = '#107c10'; }
+        else { level = 'SAFE'; levelColor = '#107c10'; }
+        const topFail = Object.entries(u.failReasons).sort((a,b) => b[1] - a[1])[0];
+        return {
+          ...u, score, blockRate, level, levelColor,
+          countries: Array.from(u.countries), foreignCountries: Array.from(u.foreignCountries),
+          ips: Array.from(u.ips), apps: Array.from(u.apps),
+          topFailReason: topFail ? topFail[0] : null
+        };
       });
+      allInsightUsers = users;
 
-      const topCompromised = [...users].filter(u => u.score > 0).sort((a,b) => b.score - a.score).slice(0,5);
-      const topBlocked = [...users].filter(u => u.blocked > 0).sort((a,b) => b.blocked - a.blocked).slice(0,5);
-      const topForeign = [...users].filter(u => u.foreign > 0).sort((a,b) => b.foreign - a.foreign).slice(0,5);
-      const topBrute = [...users].filter(u => u.blocked >= 3).sort((a,b) => b.blocked - a.blocked).slice(0,5);
+      // Summary bar
+      const critical = users.filter(u => u.level === 'CRITICAL').length;
+      const high = users.filter(u => u.level === 'HIGH').length;
+      const medium = users.filter(u => u.level === 'MEDIUM').length;
+      const uniqueCountries = new Set(); signins.forEach(s => { if (s.location && s.location.countryOrRegion) uniqueCountries.add(s.location.countryOrRegion); });
+      const foreignC = new Set(); signins.forEach(s => { const c = s.location && s.location.countryOrRegion; if (c && !SAFE_COUNTRIES.includes(c)) foreignC.add(c); });
 
-      lastInsights = { topCompromised, topBlocked, topForeign, topBrute };
+      if (summaryBar) {
+        const pill = (label, val, bg, fg) => '<div style="background:' + bg + ';color:' + fg + ';padding:6px 14px;border-radius:20px;font-size:12px;font-weight:600;white-space:nowrap;">' + val + ' ' + label + '</div>';
+        summaryBar.innerHTML =
+          pill('Cuentas analizadas', users.length, '#eef6fc', '#0078d4') +
+          (critical ? pill('CRITICAL', critical, '#fde7e9', '#d13438') : '') +
+          (high ? pill('HIGH', high, '#fff4ce', '#e74c00') : '') +
+          (medium ? pill('MEDIUM', medium, '#fff4ce', '#8a6914') : '') +
+          pill('Países', uniqueCountries.size, '#e8f5e9', '#107c10') +
+          (foreignC.size ? pill('Países extranjeros', foreignC.size, '#fde7e9', '#d13438') : '');
+      }
+
+      const topCompromised = [...users].filter(u => u.score > 0).sort((a,b) => b.score - a.score).slice(0, showCount);
+      const topBlocked = [...users].filter(u => u.blocked > 0).sort((a,b) => b.blocked - a.blocked).slice(0, showCount);
+      const topForeign = [...users].filter(u => u.foreign > 0).sort((a,b) => b.foreign - a.foreign).slice(0, showCount);
+      const topBrute = [...users].filter(u => u.blocked >= 3).sort((a,b) => b.blocked - a.blocked).slice(0, showCount);
+
+      lastInsights = { topCompromised, topBlocked, topForeign, topBrute, allUsers: users };
+
+      const levelBadge = (u) => '<span style="display:inline-block;background:' + u.levelColor + ';color:white;padding:1px 7px;border-radius:10px;font-size:9px;font-weight:700;letter-spacing:0.5px;margin-left:6px;vertical-align:middle;">' + u.level + '</span>';
 
       const card = (title, color, icon, rows, renderRow) => {
         if (!rows.length) return '';
-        return '<div style="border:1px solid #edebe9;border-radius:10px;padding:14px;">' +
-          '<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">' +
-          '<span style="font-size:18px;">' + icon + '</span>' +
-          '<strong style="color:' + color + ';font-size:13px;">' + title + '</strong>' +
+        return '<div style="border:1px solid #edebe9;border-radius:12px;padding:16px;background:#fafafa;">' +
+          '<div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;padding-bottom:8px;border-bottom:2px solid ' + color + '22;">' +
+          '<span style="font-size:20px;">' + icon + '</span>' +
+          '<strong style="color:' + color + ';font-size:14px;">' + title + '</strong>' +
+          '<span style="margin-left:auto;background:' + color + '15;color:' + color + ';padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600;">' + rows.length + '</span>' +
           '</div>' +
-          rows.map(renderRow).join('') +
+          '<div style="max-height:400px;overflow-y:auto;">' + rows.map((u, i) => renderRow(u, i)).join('') + '</div>' +
           '</div>';
       };
 
-      const rowFor = (u, metricLabel, metricValue) =>
-        '<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid #f3f2f1;">' +
-        '<div style="min-width:0;flex:1;"><div style="font-size:12px;font-weight:600;color:#201f1e;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + esc(u.name) + '</div>' +
-        '<div style="font-size:11px;color:#666;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + esc(u.upn) + '</div></div>' +
-        '<div style="text-align:right;margin-left:10px;"><div style="font-size:15px;font-weight:700;color:#d13438;">' + metricValue + '</div>' +
-        '<div style="font-size:10px;color:#666;">' + metricLabel + '</div></div>' +
-        '</div>';
+      const detailRow = (u, i, metricLabel, metricValue, extraHtml) => {
+        const blockPct = u.blockRate > 0 ? ' <span style="color:#999;font-size:10px;">(' + u.blockRate + '% fail)</span>' : '';
+        const countriesStr = u.foreignCountries.length ? '<div style="font-size:10px;color:#e74c00;margin-top:2px;">&#127758; ' + u.foreignCountries.slice(0,5).join(', ') + (u.foreignCountries.length > 5 ? ' +' + (u.foreignCountries.length-5) : '') + '</div>' : '';
+        const failStr = u.topFailReason ? '<div style="font-size:10px;color:#888;margin-top:1px;">&#8594; ' + esc(u.topFailReason).substring(0,60) + '</div>' : '';
+        const lastFailStr = u.lastFail ? '<div style="font-size:10px;color:#999;margin-top:1px;">&#128337; Last fail: ' + new Date(u.lastFail).toLocaleString() + '</div>' : '';
+        return '<div style="display:flex;justify-content:space-between;align-items:flex-start;padding:8px 4px;border-bottom:1px solid #f3f2f1;' + (i % 2 === 0 ? 'background:#fff;' : '') + '">' +
+          '<div style="min-width:0;flex:1;">' +
+          '<div style="font-size:12px;font-weight:600;color:#201f1e;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' +
+          '<span style="color:#999;font-size:10px;margin-right:4px;">#' + (i+1) + '</span>' + esc(u.name) + levelBadge(u) + '</div>' +
+          '<div style="font-size:11px;color:#666;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + esc(u.upn) + blockPct + '</div>' +
+          countriesStr + failStr + lastFailStr +
+          (extraHtml || '') +
+          '</div>' +
+          '<div style="text-align:right;margin-left:12px;flex-shrink:0;">' +
+          '<div style="font-size:16px;font-weight:700;color:#d13438;">' + metricValue + '</div>' +
+          '<div style="font-size:10px;color:#666;">' + metricLabel + '</div>' +
+          '<div style="font-size:10px;color:#999;">' + u.total + ' total</div>' +
+          '</div></div>';
+      };
 
       grid.innerHTML = [
-        card('Cuentas Más Comprometidas', '#b4009e', '&#128680;', topCompromised, u => rowFor(u, 'risk score', u.score)),
-        card('Más Bloqueos', '#d13438', '&#128272;', topBlocked, u => rowFor(u, 'blocks', u.blocked)),
-        card('Brute Force Sospechoso (3+ fails)', '#8b0000', '&#128274;', topBrute, u => rowFor(u, 'fails', u.blocked)),
-        card('Más Logins Extranjeros', '#ff8c00', '&#127758;', topForeign, u => rowFor(u, 'foreign', u.foreign))
+        card('Cuentas Más Comprometidas', '#b4009e', '&#128680;', topCompromised, (u, i) => detailRow(u, i, 'risk score', u.score)),
+        card('Más Bloqueos', '#d13438', '&#128272;', topBlocked, (u, i) => detailRow(u, i, 'blocks', u.blocked)),
+        card('Brute Force Sospechoso (3+ fails)', '#8b0000', '&#128274;', topBrute, (u, i) => detailRow(u, i, 'fails', u.blocked)),
+        card('Más Logins Extranjeros', '#ff8c00', '&#127758;', topForeign, (u, i) => detailRow(u, i, 'foreign', u.foreign,
+          '<div style="font-size:10px;color:#666;margin-top:1px;">IPs: ' + u.ips.slice(0,3).join(', ') + (u.ips.length > 3 ? ' +' + (u.ips.length-3) : '') + '</div>'
+        ))
       ].filter(Boolean).join('');
 
       container.style.display = grid.innerHTML ? 'block' : 'none';
@@ -1114,8 +1181,8 @@
 
     function exportInsightsCSV() {
       if (!lastInsights) { showToast && showToast('No insights yet'); return; }
-      const rows = [['Category','User','UPN','RiskScore','Blocked','Risky','Foreign','Malicious','Locked','Countries','IPs']];
-      const addCat = (cat, arr) => arr.forEach(u => rows.push([cat, u.name, u.upn, u.score, u.blocked, u.risky, u.foreign, u.malicious, u.locked, u.countries.join('|'), u.ips.join('|')]));
+      const rows = [['Category','Rank','User','UPN','RiskLevel','RiskScore','Total','Blocked','BlockRate%','Risky','Foreign','Malicious','Locked','ForeignCountries','TopFailReason','LastFail','IPs','Countries']];
+      const addCat = (cat, arr) => arr.forEach((u, i) => rows.push([cat, i+1, u.name, u.upn, u.level, u.score, u.total, u.blocked, u.blockRate, u.risky, u.foreign, u.malicious, u.locked, u.foreignCountries.join('|'), u.topFailReason || '', u.lastFail || '', u.ips.join('|'), u.countries.join('|')]));
       addCat('Compromised', lastInsights.topCompromised);
       addCat('MostBlocked', lastInsights.topBlocked);
       addCat('BruteForce', lastInsights.topBrute);
