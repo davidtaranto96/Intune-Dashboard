@@ -554,6 +554,7 @@
           </div>
           <div id="insightsSummaryBar" style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:16px;"></div>
           <div id="insightsGrid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;"></div>
+          <div id="insightsRecommendations" style="display:none;margin-top:18px;border-top:2px solid #edebe9;padding-top:16px;"></div>
         </div>
         <div class="table-container">
           <div class="table-header">
@@ -1176,6 +1177,144 @@
       ].filter(Boolean).join('');
 
       container.style.display = grid.innerHTML ? 'block' : 'none';
+      renderInsightRecommendations(users, signins);
+    }
+
+    function renderInsightRecommendations(users, signins) {
+      const el = document.getElementById('insightsRecommendations');
+      if (!el) return;
+
+      const recs = [];
+      const critical = users.filter(u => u.level === 'CRITICAL');
+      const high = users.filter(u => u.level === 'HIGH');
+      const foreignUsers = users.filter(u => u.foreign > 0);
+      const maliciousUsers = users.filter(u => u.malicious > 0);
+      const lockedUsers = users.filter(u => u.locked > 0);
+      const sharedAccts = users.filter(u => u.upn.match(/^(info@|it@|admin@|support@|contact@|licenses@|team)/i) && u.blocked > 0);
+      const totalBlocked = signins.filter(s => s.isBlocked).length;
+      const totalForeign = signins.filter(s => { const c = s.location && s.location.countryOrRegion; return c && !SAFE_COUNTRIES.includes(c); }).length;
+      const foreignCountries = new Set(); signins.forEach(s => { const c = s.location && s.location.countryOrRegion; if (c && !SAFE_COUNTRIES.includes(c)) foreignCountries.add(c); });
+
+      // 1. Critical accounts
+      if (critical.length > 0) {
+        recs.push({
+          severity: 'critical', icon: '&#128680;',
+          title: 'Resetear passwords de cuentas CRITICAL',
+          detail: critical.map(u => u.name + ' (' + u.upn + ')').join(', ') + ' tienen scores altísimos. Cambiar passwords inmediatamente y habilitar MFA si no lo tienen.',
+          action: 'Entra ID > Users > seleccionar usuario > Reset password + Require MFA'
+        });
+      }
+
+      // 2. Shared/service accounts under attack
+      if (sharedAccts.length > 0) {
+        recs.push({
+          severity: 'critical', icon: '&#9888;&#65039;',
+          title: 'Proteger cuentas compartidas/de servicio',
+          detail: sharedAccts.map(u => u.name).join(', ') + ' son cuentas genéricas que los atacantes prueban primero. Deshabilitar login interactivo o convertir a shared mailbox sin password.',
+          action: 'Entra ID > Users > Properties > Block sign-in = Yes, o convertir a Shared Mailbox en Exchange Admin'
+        });
+      }
+
+      // 3. Conditional Access - Block countries
+      if (foreignCountries.size > 3) {
+        recs.push({
+          severity: 'high', icon: '&#127758;',
+          title: 'Crear Conditional Access para bloquear países (' + foreignCountries.size + ' detectados)',
+          detail: 'Se detectaron logins desde: ' + Array.from(foreignCountries).slice(0, 10).join(', ') + '. Crear una Named Location con los países permitidos y una CA policy que bloquee el resto.',
+          action: 'Entra ID > Security > Conditional Access > Named Locations > crear "Países Permitidos" > Nueva Policy: Block access para All Users desde cualquier ubicación EXCEPTO "Países Permitidos"'
+        });
+      }
+
+      // 4. Malicious IPs
+      if (maliciousUsers.length > 0) {
+        const malIPs = new Set();
+        signins.forEach(s => { if ((s.status && s.status.failureReason || '').toLowerCase().includes('malicious') && s.ipAddress) malIPs.add(s.ipAddress); });
+        recs.push({
+          severity: 'high', icon: '&#128721;',
+          title: 'Bloquear ' + malIPs.size + ' IPs maliciosas detectadas',
+          detail: 'IPs flaggeadas como maliciosas por Microsoft: ' + Array.from(malIPs).slice(0, 8).join(', ') + '. Agregar a Named Locations bloqueadas.',
+          action: 'Entra ID > Security > Conditional Access > Named Locations > crear "IPs Bloqueadas" con estas IPs > Nueva Policy: Block access desde "IPs Bloqueadas"'
+        });
+      }
+
+      // 5. Block legacy auth
+      const legacyApps = signins.filter(s => s.clientAppUsed && !['Browser','Mobile Apps and Desktop clients'].includes(s.clientAppUsed));
+      if (legacyApps.length > 0) {
+        recs.push({
+          severity: 'high', icon: '&#128274;',
+          title: 'Bloquear autenticación legacy',
+          detail: 'Se detectaron ' + legacyApps.length + ' sign-ins con clients legacy (IMAP, POP3, SMTP, etc). Estos no soportan MFA y son vector principal de password spray.',
+          action: 'Entra ID > Security > Conditional Access > Nueva Policy: Block access para All Users con Client apps = "Exchange ActiveSync clients" y "Other clients"'
+        });
+      }
+
+      // 6. Locked accounts
+      if (lockedUsers.length > 0) {
+        recs.push({
+          severity: 'medium', icon: '&#128275;',
+          title: lockedUsers.length + ' cuentas con bloqueos por intentos excesivos',
+          detail: lockedUsers.map(u => u.name).join(', ') + '. Verificar que no sean ataques activos. Si son usuarios legítimos, revisar Smart Lockout settings.',
+          action: 'Entra ID > Security > Authentication Methods > Password Protection > Smart Lockout: ajustar threshold y duración'
+        });
+      }
+
+      // 7. Enable Identity Protection
+      if (critical.length + high.length >= 2) {
+        recs.push({
+          severity: 'medium', icon: '&#129505;',
+          title: 'Habilitar Azure AD Identity Protection',
+          detail: 'Con ' + (critical.length + high.length) + ' cuentas de riesgo alto, Identity Protection puede auto-remediar: forzar cambio de password cuando detecta riesgo, bloquear sign-ins de riesgo alto automáticamente.',
+          action: 'Entra ID > Security > Identity Protection > Sign-in risk policy: Block/Require MFA para riesgo Medium+High. User risk policy: Require password change para High risk.'
+        });
+      }
+
+      // 8. MFA enforcement
+      const noMFA = signins.filter(s => !s.isBlocked && s.authenticationRequirement !== 'multiFactorAuthentication');
+      if (noMFA.length > signins.length * 0.3) {
+        recs.push({
+          severity: 'medium', icon: '&#128241;',
+          title: 'Forzar MFA para todos los usuarios',
+          detail: Math.round(noMFA.length / signins.length * 100) + '% de sign-ins exitosos no requirieron MFA. Crear Security Default o CA policy que exija MFA para todos.',
+          action: 'Entra ID > Security > Conditional Access > Nueva Policy: Require MFA para All Users, All cloud apps, desde Any location'
+        });
+      }
+
+      // 9. General health
+      if (totalBlocked > 0) {
+        const blockRate = Math.round(totalBlocked / signins.length * 100);
+        recs.push({
+          severity: 'info', icon: '&#128202;',
+          title: 'Tasa de bloqueo actual: ' + blockRate + '% (' + totalBlocked + '/' + signins.length + ')',
+          detail: blockRate > 20 ? 'Tasa alta — indica ataques activos. Las medidas arriba son prioritarias.' : blockRate > 5 ? 'Tasa moderada — normal para tenants expuestos a internet, pero revisar las cuentas CRITICAL.' : 'Tasa baja — buen estado general. Mantener monitoreo.',
+          action: ''
+        });
+      }
+
+      if (!recs.length) { el.style.display = 'none'; return; }
+
+      const sevColors = { critical: '#d13438', high: '#e74c00', medium: '#ff8c00', info: '#0078d4' };
+      const sevLabels = { critical: 'URGENTE', high: 'ALTA', medium: 'MEDIA', info: 'INFO' };
+
+      el.innerHTML =
+        '<div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">' +
+        '<h3 style="margin:0;font-size:16px;color:#201f1e;">&#128737; Recomendaciones de Seguridad</h3>' +
+        '<span style="font-size:12px;color:#666;">Basadas en los datos analizados</span>' +
+        '</div>' +
+        '<div style="display:flex;flex-direction:column;gap:10px;">' +
+        recs.map(r => {
+          const c = sevColors[r.severity];
+          return '<div style="border-left:4px solid ' + c + ';background:' + c + '08;border-radius:0 8px 8px 0;padding:12px 16px;">' +
+            '<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">' +
+            '<span style="font-size:16px;">' + r.icon + '</span>' +
+            '<span style="background:' + c + ';color:white;padding:1px 6px;border-radius:6px;font-size:9px;font-weight:700;">' + sevLabels[r.severity] + '</span>' +
+            '<strong style="font-size:13px;color:#201f1e;">' + r.title + '</strong>' +
+            '</div>' +
+            '<div style="font-size:12px;color:#444;margin-bottom:' + (r.action ? '6px' : '0') + ';">' + r.detail + '</div>' +
+            (r.action ? '<div style="font-size:11px;color:#0078d4;background:#eef6fc;padding:6px 10px;border-radius:6px;margin-top:4px;"><strong>Cómo:</strong> ' + r.action + '</div>' : '') +
+            '</div>';
+        }).join('') +
+        '</div>';
+      el.style.display = 'block';
     }
 
     function exportInsightsCSV() {
