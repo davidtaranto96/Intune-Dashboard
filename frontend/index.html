@@ -79,6 +79,13 @@
     .card.clickable { cursor: pointer; }
     .card.clickable:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.12); transform: translateY(-2px); }
     .card.clickable.active-filter { outline: 3px solid #0078d4; outline-offset: -3px; }
+    /* Signin summary: 6 compact cards in one row */
+    #signinSummary { grid-template-columns: repeat(6, 1fr); gap: 8px; }
+    #signinSummary .card { padding: 10px 12px; border-radius: 8px; }
+    #signinSummary .card .label { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.4px; color: #666; margin-bottom: 4px; }
+    #signinSummary .card .value { font-size: 22px; font-weight: 700; line-height: 1; }
+    @media (max-width: 900px) { #signinSummary { grid-template-columns: repeat(3, 1fr); } }
+    @media (max-width: 500px) { #signinSummary { grid-template-columns: repeat(2, 1fr); } }
     .card .label { font-size: 11px; color: #666; text-transform: uppercase; letter-spacing: 0.5px; }
     .card .value { font-size: 28px; font-weight: 700; margin-top: 4px; }
     .card .value.green { color: #107c10; }
