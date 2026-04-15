@@ -890,6 +890,38 @@
     </div>
   </div>
 
+  <!-- Confirmation Modal -->
+  <div class="modal-overlay" id="confirmModal" style="z-index:2000;">
+    <div class="modal" style="max-width:460px;">
+      <div class="modal-header" id="confirmModalHeader">
+        <h2 id="confirmModalTitle">Confirmar acción</h2>
+        <button class="modal-close" onclick="closeConfirmModal()">&times;</button>
+      </div>
+      <div style="padding:20px 24px;">
+        <div id="confirmModalIcon" style="font-size:40px;text-align:center;margin-bottom:12px;"></div>
+        <div id="confirmModalMsg" style="font-size:14px;color:#201f1e;margin-bottom:20px;line-height:1.6;"></div>
+        <div style="display:flex;gap:10px;justify-content:flex-end;">
+          <button onclick="closeConfirmModal()" style="padding:8px 18px;border-radius:8px;border:1px solid #d2d0ce;background:white;cursor:pointer;font-size:13px;">Cancelar</button>
+          <button id="confirmModalOkBtn" style="padding:8px 18px;border-radius:8px;border:none;color:white;cursor:pointer;font-size:13px;font-weight:600;">Confirmar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- User Detail Modal (from Smart Insights click) -->
+  <div class="modal-overlay" id="userDetailModal">
+    <div class="modal" style="max-width:900px;max-height:90vh;overflow-y:auto;">
+      <div class="modal-header">
+        <div>
+          <h2 id="userDetailName">Usuario</h2>
+          <div id="userDetailSubtitle" style="font-size:12px;color:#666;margin-top:2px;"></div>
+        </div>
+        <button class="modal-close" onclick="closeUserDetailModal()">&times;</button>
+      </div>
+      <div id="userDetailContent" style="padding:0 4px 8px;"></div>
+    </div>
+  </div>
+
   <div class="toast" id="toast"></div>
 
   <script>
@@ -1203,7 +1235,7 @@
         const countriesStr = u.foreignCountries.length ? '<div style="font-size:9px;color:#e74c00;margin-top:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">&#127758; ' + u.foreignCountries.slice(0,3).join(', ') + (u.foreignCountries.length > 3 ? ' +' + (u.foreignCountries.length-3) : '') + '</div>' : '';
         const failStr = u.topFailReason ? '<div style="font-size:9px;color:#888;margin-top:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">&#8594; ' + esc(u.topFailReason).substring(0,40) + '</div>' : '';
         const lastFailStr = u.lastFail ? '<div style="font-size:9px;color:#999;margin-top:1px;">&#128337; ' + new Date(u.lastFail).toLocaleDateString() + ' ' + new Date(u.lastFail).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}) + '</div>' : '';
-        return '<div style="display:flex;justify-content:space-between;align-items:flex-start;padding:6px 3px;border-bottom:1px solid #f3f2f1;' + (i % 2 === 0 ? 'background:#fff;' : '') + '">' +
+        return '<div style="display:flex;justify-content:space-between;align-items:flex-start;padding:6px 3px;border-bottom:1px solid #f3f2f1;cursor:pointer;' + (i % 2 === 0 ? 'background:#fff;' : '') + '" onclick="openUserDetailModal(\'' + esc(u.upn) + '\')" title="Ver detalle de ' + esc(u.name) + '">' +
           '<div style="min-width:0;flex:1;">' +
           '<div style="font-size:11px;font-weight:600;color:#201f1e;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' +
           '<span style="color:#999;font-size:9px;margin-right:3px;">#' + (i+1) + '</span>' + esc(u.name) + levelBadge(u) + '</div>' +
@@ -1579,20 +1611,24 @@
     // ===== SECURITY ACTION BUTTONS =====
     async function executeUserAction(action, userId, displayName, evtOverride) {
       const actions = {
-        block: { endpoint: '/api/block-user', label: 'BLOCK', confirm: 'Are you sure you want to DISABLE the account "' + displayName + '"?\n\nThey will be IMMEDIATELY locked out of all Microsoft 365 services.\n\nThis action can be reversed with Enable User.' },
-        enable: { endpoint: '/api/enable-user', label: 'ENABLE', confirm: 'Re-enable the account "' + displayName + '"?\n\nThey will be able to sign in again.' },
-        reset: { endpoint: '/api/reset-password', label: 'FORCE PASSWORD RESET', confirm: 'Force "' + displayName + '" to change their password on next sign-in (with MFA)?\n\nThey will be prompted immediately at next login.' },
-        revoke: { endpoint: '/api/revoke-sessions', label: 'REVOKE SESSIONS', confirm: 'Revoke ALL active sessions for "' + displayName + '"?\n\nThey will be signed out of all devices and need to sign in again.' },
-        compromised: { endpoint: '/api/confirm-compromised', label: 'CONFIRM COMPROMISED', confirm: 'WARNING: Confirming "' + displayName + '" as COMPROMISED will:\n\n- Set their risk to HIGH in Azure AD Identity Protection\n- Trigger any CA policies conditioned on user risk\n- May block access or force password change\n\nOnly do this if you believe the account is truly compromised.' },
-        dismiss: { endpoint: '/api/dismiss-risk', label: 'DISMISS RISK', confirm: 'Dismiss the risk flag for "' + displayName + '"?\n\nThis marks the user as safe.' }
+        block: { endpoint: '/api/block-user', label: 'Bloquear cuenta', icon: '&#128683;', btnColor: '#d13438', confirm: '¿Deshabilitar la cuenta de <strong>' + esc(displayName) + '</strong>?\n\nSerá bloqueado inmediatamente de todos los servicios Microsoft 365.\nEsta acción se puede revertir.' },
+        enable: { endpoint: '/api/enable-user', label: 'Habilitar cuenta', icon: '&#9989;', btnColor: '#107c10', confirm: '¿Re-habilitar la cuenta de <strong>' + esc(displayName) + '</strong>?\n\nPodrá volver a iniciar sesión.' },
+        reset: { endpoint: '/api/reset-password', label: 'Resetear Password', icon: '&#128273;', btnColor: '#ff8c00', confirm: '¿Forzar a <strong>' + esc(displayName) + '</strong> a cambiar su contraseña en el próximo login?\n\nSe le pedirá también MFA al ingresar.' },
+        revoke: { endpoint: '/api/revoke-sessions', label: 'Revocar Sesiones', icon: '&#128274;', btnColor: '#0078d4', confirm: '¿Revocar TODAS las sesiones activas de <strong>' + esc(displayName) + '</strong>?\n\nSe desloguea de todos los dispositivos y debe volver a ingresar.' },
+        compromised: { endpoint: '/api/confirm-compromised', label: 'Confirmar Comprometido', icon: '&#9888;&#65039;', btnColor: '#8b0000', confirm: '⚠ ADVERTENCIA: Confirmar a <strong>' + esc(displayName) + '</strong> como COMPROMETIDO:\n\n• Sube su riesgo a HIGH en Azure AD Identity Protection\n• Activa políticas CA condicionadas a riesgo de usuario\n• Puede bloquear acceso o forzar cambio de clave\n\nHacé esto solo si creés que la cuenta fue vulnerada.' },
+        dismiss: { endpoint: '/api/dismiss-risk', label: 'Descartar Riesgo', icon: '&#128275;', btnColor: '#107c10', confirm: '¿Descartar el flag de riesgo de <strong>' + esc(displayName) + '</strong>?\n\nEsto la marca como segura en Identity Protection.' }
       };
       const act = actions[action];
       if (!act) return;
-      if (!confirm(act.confirm)) return;
 
       // Capture button ref BEFORE any await — event.target goes stale after async gaps
       const activeEvent = evtOverride || event;
       const btn = activeEvent && activeEvent.target ? activeEvent.target : null;
+
+      // Show custom confirmation modal instead of browser confirm()
+      const confirmed = await showConfirmModal(act.label, act.confirm, act.icon || '&#9888;&#65039;', act.btnColor || '#d13438');
+      if (!confirmed) return;
+
       const origText = btn ? btn.innerHTML : '';
       if (btn) { btn.disabled = true; btn.innerHTML = '&#8987; ...'; }
 
@@ -1606,12 +1642,12 @@
         if (data.success) {
           showToast('✔ ' + act.label + ': ' + displayName);
           if (btn) {
-            btn.innerHTML = '&#9989; Done';
+            btn.innerHTML = '&#9989; Hecho';
             setTimeout(() => { btn.innerHTML = origText; btn.disabled = false; }, 3000);
           }
         } else {
           const errMsg = data.error || 'Unknown error';
-          const hint = data.hint ? ' — ' + data.hint : '';
+          const hint = data.hint ? '\n' + data.hint : '';
           showToast('Error: ' + (errMsg + hint).substring(0, 150));
           if (btn) { btn.innerHTML = origText; btn.disabled = false; }
         }
@@ -1620,6 +1656,111 @@
         if (btn) { btn.innerHTML = origText; btn.disabled = false; }
       }
     }
+
+    // ===== CONFIRMATION MODAL =====
+    let _confirmResolve = null;
+    function showConfirmModal(title, message, icon, btnColor) {
+      return new Promise(resolve => {
+        _confirmResolve = resolve;
+        document.getElementById('confirmModalTitle').textContent = title;
+        document.getElementById('confirmModalMsg').innerHTML = message.replace(/\n/g, '<br>');
+        document.getElementById('confirmModalIcon').innerHTML = icon || '&#9888;&#65039;';
+        const okBtn = document.getElementById('confirmModalOkBtn');
+        okBtn.style.background = btnColor || '#d13438';
+        okBtn.onclick = () => { closeConfirmModal(); resolve(true); };
+        document.getElementById('confirmModal').classList.add('show');
+      });
+    }
+    function closeConfirmModal() {
+      document.getElementById('confirmModal').classList.remove('show');
+      if (_confirmResolve) { _confirmResolve(false); _confirmResolve = null; }
+    }
+
+    // ===== USER DETAIL MODAL (from Smart Insights) =====
+    function openUserDetailModal(upn) {
+      if (!allSignins || !allSignins.length) { showToast('Cargá sign-ins primero'); return; }
+      const userSignins = allSignins.filter(s => s.userPrincipalName === upn || s.userId === upn);
+      if (!userSignins.length) { showToast('No hay sign-ins para este usuario en el rango cargado'); return; }
+
+      const u = allInsightUsers && allInsightUsers.find(x => x.upn === upn);
+      const displayName = (userSignins[0] && userSignins[0].userDisplayName) || upn;
+      const userId = (userSignins[0] && userSignins[0].userId) || upn;
+
+      document.getElementById('userDetailName').textContent = displayName;
+      document.getElementById('userDetailSubtitle').textContent = upn + (u ? ' · Risk Score: ' + u.score + ' · ' + u.level : '');
+
+      // Stats
+      const blocked = userSignins.filter(s => s.isBlocked).length;
+      const success = userSignins.filter(s => !s.isBlocked).length;
+      const risky = userSignins.filter(s => s.riskLevel && s.riskLevel !== 'none' && s.riskLevel !== 'hidden').length;
+      const foreign = userSignins.filter(s => { const c = s.location && s.location.countryOrRegion; return c && !SAFE_COUNTRIES.includes(c); }).length;
+      const countries = [...new Set(userSignins.map(s => s.location && s.location.countryOrRegion).filter(Boolean))];
+      const foreignC = countries.filter(c => !SAFE_COUNTRIES.includes(c));
+      const ips = [...new Set(userSignins.map(s => s.ipAddress).filter(Boolean))];
+      const apps = [...new Set(userSignins.map(s => s.appDisplayName).filter(Boolean))];
+
+      // Failure reasons
+      const reasons = {};
+      userSignins.filter(s => s.isBlocked).forEach(s => {
+        const r = (s.status && s.status.failureReason) || 'Unknown';
+        reasons[r] = (reasons[r] || 0) + 1;
+      });
+      const topReasons = Object.entries(reasons).sort((a,b) => b[1]-a[1]).slice(0, 5);
+
+      const lvlColor = u ? u.levelColor : '#666';
+      const lvlBadge = u ? '<span style="background:' + lvlColor + ';color:white;padding:2px 10px;border-radius:10px;font-size:11px;font-weight:700;margin-left:8px;">' + u.level + '</span>' : '';
+
+      const stat = (label, val, color) =>
+        '<div style="text-align:center;padding:12px 16px;background:#fafafa;border-radius:10px;border:1px solid #edebe9;">' +
+        '<div style="font-size:22px;font-weight:700;color:' + (color||'#201f1e') + ';">' + val + '</div>' +
+        '<div style="font-size:11px;color:#666;margin-top:2px;">' + label + '</div></div>';
+
+      const actionBar =
+        '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;padding:12px;background:#fafafa;border-radius:10px;border:1px solid #edebe9;">' +
+        '<span style="font-size:12px;font-weight:600;color:#201f1e;display:flex;align-items:center;margin-right:auto;">&#9881; Acciones</span>' +
+        '<button class="action-btn action-danger" onclick="executeUserAction(\'block\',\'' + userId + '\',\'' + esc(displayName) + '\',event)">&#128683; Bloquear</button>' +
+        '<button class="action-btn action-warning" onclick="executeUserAction(\'reset\',\'' + userId + '\',\'' + esc(displayName) + '\',event)">&#128273; Resetear Password</button>' +
+        '<button class="action-btn action-info" onclick="executeUserAction(\'revoke\',\'' + userId + '\',\'' + esc(displayName) + '\',event)">&#128274; Revocar Sesiones</button>' +
+        '<button class="action-btn action-critical" onclick="executeUserAction(\'compromised\',\'' + userId + '\',\'' + esc(displayName) + '\',event)">&#9888; Confirmar Comprometido</button>' +
+        '</div>';
+
+      // Recent sign-ins table for this user
+      const signinRows = userSignins.slice(0, 20).map(s => {
+        const stColor = s.isBlocked ? '#d13438' : '#107c10';
+        const stText = s.isBlocked ? 'BLOCKED' : 'OK';
+        const cc = s.location && s.location.countryOrRegion;
+        const isForeign = cc && !SAFE_COUNTRIES.includes(cc);
+        return '<tr>' +
+          '<td style="font-size:11px;white-space:nowrap;">' + (s.createdDateTime ? new Date(s.createdDateTime).toLocaleString() : '-') + '</td>' +
+          '<td><span style="background:' + stColor + ';color:white;padding:1px 6px;border-radius:4px;font-size:10px;font-weight:700;">' + stText + '</span></td>' +
+          '<td style="font-size:11px;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + esc((s.status && s.status.failureReason) || '-') + '</td>' +
+          '<td style="font-size:11px;">' + esc(cc || '-') + (isForeign ? ' &#127758;' : '') + '</td>' +
+          '<td style="font-size:11px;">' + esc(s.ipAddress || '-') + '</td>' +
+          '<td style="font-size:11px;max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + esc(s.appDisplayName || '-') + '</td>' +
+          '</tr>';
+      }).join('');
+
+      document.getElementById('userDetailContent').innerHTML =
+        actionBar +
+        '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:10px;margin-bottom:16px;">' +
+          stat('Total', userSignins.length) +
+          stat('Bloqueados', blocked, '#d13438') +
+          stat('Exitosos', success, '#107c10') +
+          stat('Risky', risky, risky > 0 ? '#ff8c00' : '#107c10') +
+          stat('Extranjeros', foreign, foreign > 0 ? '#e74c00' : '#107c10') +
+        '</div>' +
+        (foreignC.length ? '<div style="background:#fde7e9;padding:10px 14px;border-radius:8px;margin-bottom:14px;font-size:12px;"><strong>&#127758; Países extranjeros:</strong> ' + foreignC.join(', ') + '</div>' : '') +
+        (topReasons.length ? '<div style="background:#fff4ce;padding:10px 14px;border-radius:8px;margin-bottom:14px;font-size:12px;"><strong>&#8594; Principales errores:</strong><br>' + topReasons.map(([r,n]) => '&nbsp;&nbsp;' + n + 'x ' + esc(r)).join('<br>') + '</div>' : '') +
+        '<div style="font-size:11px;color:#666;margin-bottom:6px;"><strong>IPs:</strong> ' + ips.slice(0,8).join(', ') + (ips.length > 8 ? ' +' + (ips.length-8) + ' más' : '') + '</div>' +
+        '<div style="font-size:11px;color:#666;margin-bottom:14px;"><strong>Apps:</strong> ' + apps.slice(0,5).join(', ') + '</div>' +
+        '<div style="font-size:13px;font-weight:600;margin-bottom:8px;">Últimos ' + Math.min(userSignins.length, 20) + ' sign-ins</div>' +
+        '<div style="overflow-x:auto;"><table style="width:100%;border-collapse:collapse;font-size:12px;">' +
+        '<thead><tr style="background:#f8f8f8;"><th style="padding:6px 8px;text-align:left;border-bottom:2px solid #edebe9;">Fecha</th><th style="padding:6px 8px;">Estado</th><th style="padding:6px 8px;text-align:left;">Error</th><th style="padding:6px 8px;">País</th><th style="padding:6px 8px;">IP</th><th style="padding:6px 8px;text-align:left;">App</th></tr></thead>' +
+        '<tbody>' + signinRows + '</tbody></table></div>';
+
+      document.getElementById('userDetailModal').classList.add('show');
+    }
+    function closeUserDetailModal() { document.getElementById('userDetailModal').classList.remove('show'); }
 
     // Helper: inline action buttons for Smart Insights rows
     // Store user data in a registry to avoid quote escaping issues in onclick attributes
@@ -2427,6 +2568,8 @@
 
     document.getElementById('dashConfigModal').addEventListener('click', function(e) { if (e.target === this) closeDashboardConfig(); });
     document.getElementById('signinModal').addEventListener('click', function(e) { if (e.target === this) closeSigninModal(); });
+    document.getElementById('confirmModal').addEventListener('click', function(e) { if (e.target === this) closeConfirmModal(); });
+    document.getElementById('userDetailModal').addEventListener('click', function(e) { if (e.target === this) closeUserDetailModal(); });
 
     function saveNotifySettings() {
       const settings = {
