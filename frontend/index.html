@@ -1942,15 +1942,25 @@
       const list = document.getElementById('riskyUsersList');
       if (!users.length) { list.innerHTML = '<span style="color:#107c10;">&#9989; No risky users detected.</span>'; return; }
       list.innerHTML = users.slice(0, 15).map(u => {
-        const rlColor = u.riskLevel === 'high' ? '#d13438' : u.riskLevel === 'medium' ? '#ff8c00' : '#107c10';
-        return '<div style="display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid #f3f2f1;">' +
-          '<div style="min-width:0;flex:1;"><div style="font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + esc(u.userDisplayName || u.userPrincipalName) + '</div>' +
-          '<div style="font-size:10px;color:#666;">' + esc(u.userPrincipalName || '') + '</div></div>' +
-          '<div style="display:flex;align-items:center;gap:6px;">' +
-          '<span style="background:' + rlColor + ';color:white;padding:1px 6px;border-radius:6px;font-size:9px;font-weight:700;">' + (u.riskLevel || '').toUpperCase() + '</span>' +
-          '<button class="action-btn action-danger" style="padding:2px 6px;font-size:9px;" onclick="executeUserAction(\'block\',\'' + esc(u.id) + '\',\'' + esc(u.userDisplayName || '') + '\',event)">Block</button>' +
-          '<button class="action-btn action-warning" style="padding:2px 6px;font-size:9px;" onclick="executeUserAction(\'reset\',\'' + esc(u.id) + '\',\'' + esc(u.userDisplayName || '') + '\',event)">Reset</button>' +
-          '</div></div>';
+        // Fix "NONE" badge: prefer riskLevel if meaningful, else use riskState
+        const lvl = (u.riskLevel && u.riskLevel !== 'none') ? u.riskLevel : null;
+        const state = (u.riskState && u.riskState !== 'none') ? u.riskState : null;
+        const badgeText = lvl ? lvl.toUpperCase() : state ? state.replace(/([A-Z])/g,' $1').trim().toUpperCase() : 'AT RISK';
+        const rlColor = lvl === 'high' || state === 'confirmedCompromised' ? '#d13438'
+          : lvl === 'medium' || state === 'atRisk' ? '#ff8c00'
+          : lvl === 'low' ? '#107c10'
+          : '#8a6914';
+        const upn = esc(u.userPrincipalName || '');
+        const name = esc(u.userDisplayName || u.userPrincipalName || '');
+        return `<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid #f3f2f1;cursor:pointer;" onclick="openUserDetailModal('${upn}')" title="Ver detalle de ${name}">` +
+          `<div style="min-width:0;flex:1;">` +
+          `<div style="font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#0078d4;text-decoration:underline dotted;">${name}</div>` +
+          `<div style="font-size:10px;color:#666;">${upn}</div></div>` +
+          `<div style="display:flex;align-items:center;gap:6px;" onclick="event.stopPropagation()">` +
+          `<span style="background:${rlColor};color:white;padding:1px 6px;border-radius:6px;font-size:9px;font-weight:700;">${badgeText}</span>` +
+          `<button class="action-btn action-danger" style="padding:2px 6px;font-size:9px;" onclick="executeUserAction('block','${esc(u.id)}','${name}',event)">Block</button>` +
+          `<button class="action-btn action-warning" style="padding:2px 6px;font-size:9px;" onclick="executeUserAction('reset','${esc(u.id)}','${name}',event)">Reset</button>` +
+          `</div></div>`;
       }).join('');
     }
 
