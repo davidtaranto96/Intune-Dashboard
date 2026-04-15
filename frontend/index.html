@@ -79,6 +79,14 @@
     .card.clickable { cursor: pointer; }
     .card.clickable:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.12); transform: translateY(-2px); }
     .card.clickable.active-filter { outline: 3px solid #0078d4; outline-offset: -3px; }
+    /* Clickable intel pills (Risky Users / Defender Alerts) */
+    .intel-pill { padding: 3px 10px; border-radius: 10px; font-size: 10px; font-weight: 600; cursor: pointer; border: 2px solid transparent; transition: all 0.15s; display: inline-block; user-select: none; }
+    .intel-pill:hover { opacity: 0.8; border-color: currentColor; }
+    .intel-pill-active { border-color: currentColor !important; box-shadow: 0 0 0 2px rgba(0,0,0,0.12); }
+    .intel-pill-reset { background: #f3f2f1 !important; color: #323130 !important; }
+    /* Secure Score card clickable */
+    #secureScoreCard { cursor: pointer; transition: box-shadow 0.2s, transform 0.2s; }
+    #secureScoreCard:hover { box-shadow: 0 4px 14px rgba(0,120,212,0.18); transform: translateY(-2px); }
     /* Signin summary: 6 compact cards in one row */
     #signinSummary { grid-template-columns: repeat(6, 1fr); gap: 8px; }
     #signinSummary .card { padding: 10px 12px; border-radius: 8px; }
@@ -438,8 +446,8 @@
           <div class="dash-section-title">&#128737; Security Intelligence <span style="font-size:11px;font-weight:400;color:#999;">(Microsoft Secure Score, Risky Users, Defender Alerts)</span></div>
           <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;">
             <!-- Secure Score -->
-            <div id="secureScoreCard" style="background:white;border-radius:12px;padding:20px;box-shadow:0 1px 3px rgba(0,0,0,0.08);text-align:center;">
-              <div style="font-size:13px;font-weight:600;color:#201f1e;margin-bottom:12px;">&#127919; Microsoft Secure Score</div>
+            <div id="secureScoreCard" style="background:white;border-radius:12px;padding:20px;box-shadow:0 1px 3px rgba(0,0,0,0.08);text-align:center;" onclick="window.open('https://security.microsoft.com/securescore','_blank')" title="Abrir Microsoft Secure Score">
+              <div style="font-size:13px;font-weight:600;color:#201f1e;margin-bottom:12px;">&#127919; Microsoft Secure Score <span style="font-size:10px;color:#0078d4;">&#8599;</span></div>
               <div id="secureScoreGauge" style="position:relative;width:120px;height:120px;margin:0 auto 10px;">
                 <svg viewBox="0 0 120 120" style="transform:rotate(-90deg);">
                   <circle cx="60" cy="60" r="52" fill="none" stroke="#f0f0f0" stroke-width="10"/>
@@ -1907,22 +1915,43 @@
           return;
         }
         const s = data.summary || {};
-        const pill = (l, v, bg, fg) => v > 0 ? '<span style="background:' + bg + ';color:' + fg + ';padding:2px 8px;border-radius:10px;font-size:10px;font-weight:600;">' + v + ' ' + l + '</span>' : '';
-        summary.innerHTML = pill('High', s.high, '#fde7e9', '#d13438') + pill('Medium', s.medium, '#fff4ce', '#8a6914') + pill('Low', s.low, '#e8f5e9', '#107c10') + pill('At Risk', s.atRisk, '#fde7e9', '#d13438');
-        const users = data.riskyUsers || [];
-        if (!users.length) { list.innerHTML = '<span style="color:#107c10;">&#9989; No risky users detected.</span>'; return; }
-        list.innerHTML = users.slice(0, 15).map(u => {
-          const rlColor = u.riskLevel === 'high' ? '#d13438' : u.riskLevel === 'medium' ? '#ff8c00' : '#107c10';
-          return '<div style="display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid #f3f2f1;">' +
-            '<div style="min-width:0;flex:1;"><div style="font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + esc(u.userDisplayName || u.userPrincipalName) + '</div>' +
-            '<div style="font-size:10px;color:#666;">' + esc(u.userPrincipalName || '') + '</div></div>' +
-            '<div style="display:flex;align-items:center;gap:6px;">' +
-            '<span style="background:' + rlColor + ';color:white;padding:1px 6px;border-radius:6px;font-size:9px;font-weight:700;">' + (u.riskLevel || '').toUpperCase() + '</span>' +
-            '<button class="action-btn action-danger" style="padding:2px 6px;font-size:9px;" onclick="executeUserAction(\'block\',\'' + esc(u.id) + '\',\'' + esc(u.userDisplayName || '') + '\',event)">Block</button>' +
-            '<button class="action-btn action-warning" style="padding:2px 6px;font-size:9px;" onclick="executeUserAction(\'reset\',\'' + esc(u.id) + '\',\'' + esc(u.userDisplayName || '') + '\',event)">Reset</button>' +
-            '</div></div>';
-        }).join('');
+        window._riskyUsersAll = data.riskyUsers || [];
+        const pill = (l, v, bg, fg, f) => v > 0
+          ? `<span class="intel-pill" style="background:${bg};color:${fg};" onclick="filterRiskyUsers('${f}',event)">${v} ${l}</span>` : '';
+        summary.innerHTML =
+          `<span class="intel-pill intel-pill-reset intel-pill-active" onclick="filterRiskyUsers('all',event)">&#128100; All</span>` +
+          pill('High', s.high, '#fde7e9', '#d13438', 'high') +
+          pill('Medium', s.medium, '#fff4ce', '#8a6914', 'medium') +
+          pill('Low', s.low, '#e8f5e9', '#107c10', 'low') +
+          pill('At Risk', s.atRisk, '#fde7e9', '#d13438', 'atRisk');
+        renderRiskyUsersList(window._riskyUsersAll);
       } catch (e) { list.innerHTML = '<span style="color:#888;">Failed to load.</span>'; }
+    }
+
+    function filterRiskyUsers(level, evt) {
+      document.querySelectorAll('#riskyUsersSummary .intel-pill').forEach(p => p.classList.remove('intel-pill-active'));
+      if (evt && evt.target) evt.target.classList.add('intel-pill-active');
+      const users = window._riskyUsersAll || [];
+      const filtered = level === 'all' ? users :
+        level === 'atRisk' ? users.filter(u => u.riskState === 'atRisk' || (u.riskLevel && u.riskLevel !== 'none')) :
+        users.filter(u => u.riskLevel === level);
+      renderRiskyUsersList(filtered);
+    }
+
+    function renderRiskyUsersList(users) {
+      const list = document.getElementById('riskyUsersList');
+      if (!users.length) { list.innerHTML = '<span style="color:#107c10;">&#9989; No risky users detected.</span>'; return; }
+      list.innerHTML = users.slice(0, 15).map(u => {
+        const rlColor = u.riskLevel === 'high' ? '#d13438' : u.riskLevel === 'medium' ? '#ff8c00' : '#107c10';
+        return '<div style="display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid #f3f2f1;">' +
+          '<div style="min-width:0;flex:1;"><div style="font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + esc(u.userDisplayName || u.userPrincipalName) + '</div>' +
+          '<div style="font-size:10px;color:#666;">' + esc(u.userPrincipalName || '') + '</div></div>' +
+          '<div style="display:flex;align-items:center;gap:6px;">' +
+          '<span style="background:' + rlColor + ';color:white;padding:1px 6px;border-radius:6px;font-size:9px;font-weight:700;">' + (u.riskLevel || '').toUpperCase() + '</span>' +
+          '<button class="action-btn action-danger" style="padding:2px 6px;font-size:9px;" onclick="executeUserAction(\'block\',\'' + esc(u.id) + '\',\'' + esc(u.userDisplayName || '') + '\',event)">Block</button>' +
+          '<button class="action-btn action-warning" style="padding:2px 6px;font-size:9px;" onclick="executeUserAction(\'reset\',\'' + esc(u.id) + '\',\'' + esc(u.userDisplayName || '') + '\',event)">Reset</button>' +
+          '</div></div>';
+      }).join('');
     }
 
     async function fetchDefenderAlerts() {
@@ -1937,22 +1966,43 @@
           return;
         }
         const s = data.summary || {};
-        const pill = (l, v, bg, fg) => v > 0 ? '<span style="background:' + bg + ';color:' + fg + ';padding:2px 8px;border-radius:10px;font-size:10px;font-weight:600;">' + v + ' ' + l + '</span>' : '';
-        summary.innerHTML = pill('High', s.high, '#fde7e9', '#d13438') + pill('Medium', s.medium, '#fff4ce', '#8a6914') + pill('Low', s.low, '#e8f5e9', '#107c10') + pill('New', s.new || s.newCount, '#eef6fc', '#0078d4');
-        const alerts = data.alerts || [];
-        if (!alerts.length) { list.innerHTML = '<span style="color:#107c10;">&#9989; No active security alerts.</span>'; return; }
-        list.innerHTML = alerts.slice(0, 15).map(a => {
-          const sevColor = a.severity === 'high' ? '#d13438' : a.severity === 'medium' ? '#ff8c00' : a.severity === 'low' ? '#ffaa44' : '#0078d4';
-          return '<div style="padding:6px 0;border-bottom:1px solid #f3f2f1;">' +
-            '<div style="display:flex;align-items:center;gap:6px;">' +
-            '<span style="background:' + sevColor + ';color:white;padding:1px 6px;border-radius:6px;font-size:9px;font-weight:700;">' + (a.severity || '').toUpperCase() + '</span>' +
-            '<span style="font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + esc(a.title || 'Alert') + '</span>' +
-            '</div>' +
-            '<div style="font-size:10px;color:#666;margin-top:2px;">' + (a.createdDateTime ? new Date(a.createdDateTime).toLocaleString() : '') +
-            (a.alertWebUrl ? ' &middot; <a href="' + esc(a.alertWebUrl) + '" target="_blank" style="color:#0078d4;">View in Defender</a>' : '') +
-            '</div></div>';
-        }).join('');
+        window._defenderAlertsAll = data.alerts || [];
+        const pill = (l, v, bg, fg, f) => v > 0
+          ? `<span class="intel-pill" style="background:${bg};color:${fg};" onclick="filterDefenderAlerts('${f}',event)">${v} ${l}</span>` : '';
+        summary.innerHTML =
+          `<span class="intel-pill intel-pill-reset intel-pill-active" onclick="filterDefenderAlerts('all',event)">&#128737; All</span>` +
+          pill('High', s.high, '#fde7e9', '#d13438', 'high') +
+          pill('Medium', s.medium, '#fff4ce', '#8a6914', 'medium') +
+          pill('Low', s.low, '#e8f5e9', '#107c10', 'low') +
+          pill('New', s.new, '#eef6fc', '#0078d4', 'new');
+        renderDefenderAlertsList(window._defenderAlertsAll);
       } catch (e) { list.innerHTML = '<span style="color:#888;">Failed to load.</span>'; }
+    }
+
+    function filterDefenderAlerts(sev, evt) {
+      document.querySelectorAll('#defenderAlertsSummary .intel-pill').forEach(p => p.classList.remove('intel-pill-active'));
+      if (evt && evt.target) evt.target.classList.add('intel-pill-active');
+      const alerts = window._defenderAlertsAll || [];
+      const filtered = sev === 'all' ? alerts :
+        sev === 'new' ? alerts.filter(a => a.status === 'new') :
+        alerts.filter(a => a.severity === sev);
+      renderDefenderAlertsList(filtered);
+    }
+
+    function renderDefenderAlertsList(alerts) {
+      const list = document.getElementById('defenderAlertsList');
+      if (!alerts.length) { list.innerHTML = '<span style="color:#107c10;">&#9989; No active security alerts.</span>'; return; }
+      list.innerHTML = alerts.slice(0, 15).map(a => {
+        const sevColor = a.severity === 'high' ? '#d13438' : a.severity === 'medium' ? '#ff8c00' : a.severity === 'low' ? '#ffaa44' : '#0078d4';
+        return '<div style="padding:6px 0;border-bottom:1px solid #f3f2f1;">' +
+          '<div style="display:flex;align-items:center;gap:6px;">' +
+          '<span style="background:' + sevColor + ';color:white;padding:1px 6px;border-radius:6px;font-size:9px;font-weight:700;">' + (a.severity || '').toUpperCase() + '</span>' +
+          '<span style="font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + esc(a.title || 'Alert') + '</span>' +
+          '</div>' +
+          '<div style="font-size:10px;color:#666;margin-top:2px;">' + (a.createdDateTime ? new Date(a.createdDateTime).toLocaleString() : '') +
+          (a.alertWebUrl ? ' &middot; <a href="' + esc(a.alertWebUrl) + '" target="_blank" style="color:#0078d4;">View in Defender</a>' : '') +
+          '</div></div>';
+      }).join('');
     }
 
     function renderSigninCharts(signins) {
