@@ -428,6 +428,8 @@
       <div class="tab" data-tab="policies" data-i18n="tab.policies">Policies</div>
       <div class="tab" data-tab="signins" data-i18n="tab.signins">Sign-in Logs</div>
       <div class="tab" data-tab="alerts" data-i18n="tab.alerts">Alerts</div>
+      <div class="tab" data-tab="defender" data-i18n="tab.defender">&#128737; Defender</div>
+      <div class="tab" data-tab="emailsec" data-i18n="tab.emailsec">&#128140; Email Security</div>
       <div class="tab" data-tab="reports" data-i18n="tab.reports">Reports</div>
     </div>
 
@@ -738,6 +740,70 @@
         </div>
       </div>
 
+      <!-- DEFENDER TAB -->
+      <div id="defender" class="tab-content">
+        <!-- Summary cards -->
+        <div class="summary-cards" id="defenderSummaryCards" style="grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:16px;">
+          <div class="card"><div class="label" data-i18n="def.total_incidents">Total Incidents</div><div class="value blue" id="defTotalIncidents">-</div></div>
+          <div class="card"><div class="label" data-i18n="def.active">Active</div><div class="value red" id="defActiveIncidents">-</div></div>
+          <div class="card"><div class="label" data-i18n="def.high">High Severity</div><div class="value red" id="defHighIncidents">-</div></div>
+          <div class="card"><div class="label" data-i18n="def.recommendations">Recommendations</div><div class="value orange" id="defRecsCount">-</div></div>
+        </div>
+
+        <!-- Security Recommendations -->
+        <div style="background:white;border-radius:10px;padding:18px;box-shadow:0 1px 4px rgba(0,0,0,0.08);margin-bottom:16px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+            <div style="font-size:14px;font-weight:600;color:#201f1e;" data-i18n="def.recommendations_title">&#128270; Security Recommendations</div>
+            <button class="config-btn" onclick="toggleDefRecs()" id="defRecsToggleBtn" style="font-size:12px;">&#9660; Show all</button>
+          </div>
+          <div id="defRecsList">Loading...</div>
+        </div>
+
+        <!-- Active Incidents -->
+        <div style="background:white;border-radius:10px;padding:18px;box-shadow:0 1px 4px rgba(0,0,0,0.08);margin-bottom:16px;">
+          <div style="font-size:14px;font-weight:600;color:#201f1e;margin-bottom:10px;" data-i18n="def.incidents_title">&#9888; Active Incidents</div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px;" id="defIncidentPills">
+            <span class="intel-pill intel-pill-reset intel-pill-active" onclick="filterDefIncidents('all',event)">All</span>
+          </div>
+          <div id="defIncidentsList">Loading...</div>
+        </div>
+
+        <!-- Endpoint Alerts -->
+        <div style="background:white;border-radius:10px;padding:18px;box-shadow:0 1px 4px rgba(0,0,0,0.08);">
+          <div style="font-size:14px;font-weight:600;color:#201f1e;margin-bottom:10px;" data-i18n="def.endpoint_alerts_title">&#128737; Endpoint Alerts</div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px;" id="defAlertPills">
+            <span class="intel-pill intel-pill-reset intel-pill-active" onclick="filterDefEndpointAlerts('all',event)">All</span>
+          </div>
+          <div id="defEndpointAlertsList">Loading...</div>
+        </div>
+      </div>
+
+      <!-- EMAIL SECURITY TAB -->
+      <div id="emailsec" class="tab-content">
+        <!-- Summary cards -->
+        <div class="summary-cards" id="emailSecSummaryCards" style="grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:16px;">
+          <div class="card"><div class="label" data-i18n="email.total">Total Threats</div><div class="value red" id="emailTotalThreats">-</div></div>
+          <div class="card"><div class="label" data-i18n="email.phishing">Phishing</div><div class="value red" id="emailPhishing">-</div></div>
+          <div class="card"><div class="label" data-i18n="email.malware">Malware</div><div class="value red" id="emailMalware">-</div></div>
+          <div class="card"><div class="label" data-i18n="email.targeted">Users Targeted</div><div class="value orange" id="emailUsersTargeted">-</div></div>
+        </div>
+
+        <!-- Top Targeted Users -->
+        <div style="background:white;border-radius:10px;padding:18px;box-shadow:0 1px 4px rgba(0,0,0,0.08);margin-bottom:16px;">
+          <div style="font-size:14px;font-weight:600;color:#201f1e;margin-bottom:12px;" data-i18n="email.top_targeted">&#127919; Top Targeted Users</div>
+          <div id="emailTopTargetedList">Loading...</div>
+        </div>
+
+        <!-- Email Threat Alerts -->
+        <div style="background:white;border-radius:10px;padding:18px;box-shadow:0 1px 4px rgba(0,0,0,0.08);">
+          <div style="font-size:14px;font-weight:600;color:#201f1e;margin-bottom:10px;" data-i18n="email.threats_title">&#128140; Email Threat Alerts</div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px;" id="emailThreatPills">
+            <span class="intel-pill intel-pill-reset intel-pill-active" onclick="filterEmailThreats('all',event)">&#128140; All</span>
+          </div>
+          <div id="emailThreatsList">Loading...</div>
+        </div>
+      </div>
+
       <!-- REPORTS -->
       <div id="reports" class="tab-content">
         <div class="report-builder">
@@ -1005,6 +1071,13 @@
         'si.filter.reset':'&#8634; Reset','si.table.title':'Recent Sign-in Activity','si.search':'Search by user...',
         'confirm.cancel':'Cancel','confirm.ok':'Confirm',
         'wn.title':'&#128196; What\'s New','wn.got_it':'Got it',
+        'tab.defender':'&#128737; Defender','tab.emailsec':'&#128140; Email Security',
+        'def.total_incidents':'Total Incidents','def.active':'Active','def.high':'High Severity',
+        'def.recommendations':'Recommendations','def.recommendations_title':'&#128270; Security Recommendations',
+        'def.incidents_title':'&#9888; Active Incidents','def.endpoint_alerts_title':'&#128737; Endpoint Alerts',
+        'email.total':'Total Threats','email.phishing':'Phishing','email.malware':'Malware',
+        'email.targeted':'Users Targeted','email.top_targeted':'&#127919; Top Targeted Users',
+        'email.threats_title':'&#128140; Email Threat Alerts',
       },
       es: {
         'login.title':'Panel de Cumplimiento Intune',
@@ -1031,6 +1104,13 @@
         'si.filter.reset':'&#8634; Restablecer','si.table.title':'Actividad Reciente de Acceso','si.search':'Buscar por usuario...',
         'confirm.cancel':'Cancelar','confirm.ok':'Confirmar',
         'wn.title':'&#128196; Novedades','wn.got_it':'Entendido',
+        'tab.defender':'&#128737; Defender','tab.emailsec':'&#128140; Seguridad de Email',
+        'def.total_incidents':'Total Incidentes','def.active':'Activos','def.high':'Alta Severidad',
+        'def.recommendations':'Recomendaciones','def.recommendations_title':'&#128270; Recomendaciones de Seguridad',
+        'def.incidents_title':'&#9888; Incidentes Activos','def.endpoint_alerts_title':'&#128737; Alertas de Endpoint',
+        'email.total':'Total Amenazas','email.phishing':'Phishing','email.malware':'Malware',
+        'email.targeted':'Usuarios Afectados','email.top_targeted':'&#127919; Usuarios Más Atacados',
+        'email.threats_title':'&#128140; Alertas de Amenazas de Email',
       }
     };
     function t(key) { return (T[LANG.current] || T.en)[key] || ''; }
@@ -1130,6 +1210,8 @@
       if (content) content.classList.add('active');
 
       if (tabName === 'signins' && allSignins.length === 0) fetchSignins();
+      if (tabName === 'defender' && !window._defTabLoaded) { window._defTabLoaded = true; fetchDefenderTab(); }
+      if (tabName === 'emailsec' && !window._emailTabLoaded) { window._emailTabLoaded = true; fetchEmailSecurityTab(); }
       if (tabName === 'dashboard') {
         // Destroy all charts first — canvas may have been hidden and lost its dimensions
         [complianceChart, osChart, complianceByOSChart, signinCountryChart, signinBlockedReasonChart].forEach(c => { try { if (c) c.destroy(); } catch(e){} });
@@ -2198,6 +2280,246 @@
           </div>
         </div>`;
       }).join('');
+    }
+
+    // ===== DEFENDER TAB =====
+    let defRecsExpanded = false;
+    async function fetchDefenderTab() {
+      await Promise.allSettled([fetchDefenderIncidents(), fetchDefenderRecommendations(), fetchDefenderEndpointAlerts()]);
+    }
+
+    async function fetchDefenderIncidents() {
+      const listEl = document.getElementById('defIncidentsList');
+      const pillsEl = document.getElementById('defIncidentPills');
+      try {
+        const res = await fetch('/api/defender-incidents');
+        const data = await res.json();
+        if (data.error) { listEl.innerHTML = `<div style="color:#888;padding:12px;font-size:12px;">${esc(data.hint || data.error)}</div>`; return; }
+        const s = data.summary || {};
+        document.getElementById('defTotalIncidents').textContent = s.total || 0;
+        document.getElementById('defActiveIncidents').textContent = s.active || 0;
+        document.getElementById('defHighIncidents').textContent = s.high || 0;
+        window._defIncidentsAll = data.incidents || [];
+        const pill = (l, v, bg, fg, f) => v > 0 ? `<span class="intel-pill" style="background:${bg};color:${fg};" onclick="filterDefIncidents('${f}',event)">${v} ${l}</span>` : '';
+        pillsEl.innerHTML =
+          `<span class="intel-pill intel-pill-reset intel-pill-active" onclick="filterDefIncidents('all',event)">All ${s.total||0}</span>` +
+          pill('High', s.high, '#fde7e9','#d13438','high') +
+          pill('Medium', s.medium, '#fff4ce','#8a6914','medium') +
+          pill('Active', s.active, '#eef6fc','#0078d4','active') +
+          pill('Resolved', s.resolved, '#e8f5e9','#107c10','resolved');
+        renderIncidentsList(window._defIncidentsAll);
+      } catch(e) { listEl.innerHTML = '<span style="color:#888;">Failed to load incidents.</span>'; }
+    }
+
+    function filterDefIncidents(f, evt) {
+      document.querySelectorAll('#defIncidentPills .intel-pill').forEach(p => p.classList.remove('intel-pill-active'));
+      if (evt && evt.target) evt.target.classList.add('intel-pill-active');
+      const all = window._defIncidentsAll || [];
+      const filtered = f === 'all' ? all :
+        f === 'active' ? all.filter(i => i.status === 'active' || i.status === 'inProgress') :
+        f === 'resolved' ? all.filter(i => i.status === 'resolved') :
+        all.filter(i => i.severity === f);
+      renderIncidentsList(filtered);
+    }
+
+    function renderIncidentsList(incidents) {
+      const el = document.getElementById('defIncidentsList');
+      if (!incidents.length) { el.innerHTML = '<span style="color:#107c10;">&#9989; No incidents found.</span>'; return; }
+      const sevColor = s => s==='high'?'#d13438':s==='medium'?'#ff8c00':s==='low'?'#107c10':'#0078d4';
+      const statusIcon = s => s==='active'||s==='inProgress' ? '&#128308;' : s==='resolved' ? '&#128994;' : '&#128993;';
+      el.innerHTML = `<table style="width:100%;border-collapse:collapse;font-size:12px;">
+        <thead><tr style="border-bottom:2px solid #e0e0e0;">
+          <th style="text-align:left;padding:6px 4px;font-weight:600;">Incident</th>
+          <th style="text-align:left;padding:6px 4px;font-weight:600;">Severity</th>
+          <th style="text-align:left;padding:6px 4px;font-weight:600;">Status</th>
+          <th style="text-align:left;padding:6px 4px;font-weight:600;">Alerts</th>
+          <th style="text-align:left;padding:6px 4px;font-weight:600;">Date</th>
+          <th style="text-align:left;padding:6px 4px;font-weight:600;"></th>
+        </tr></thead><tbody>` +
+        incidents.slice(0,20).map(i => `<tr style="border-bottom:1px solid #f3f2f1;cursor:pointer;" onclick="toggleIncidentDetails('${i.id}')">
+          <td style="padding:7px 4px;font-weight:500;max-width:280px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${statusIcon(i.status)} ${esc(i.displayName||'Unnamed')}</td>
+          <td style="padding:7px 4px;"><span style="background:${sevColor(i.severity)};color:white;padding:1px 6px;border-radius:4px;font-size:10px;font-weight:700;">${(i.severity||'').toUpperCase()}</span></td>
+          <td style="padding:7px 4px;color:#555;font-size:11px;">${esc(i.status||'')}</td>
+          <td style="padding:7px 4px;">${i.alertCount||0}</td>
+          <td style="padding:7px 4px;color:#888;font-size:10px;">${i.createdDateTime?new Date(i.createdDateTime).toLocaleDateString():'-'}</td>
+          <td style="padding:7px 4px;">${i.incidentWebUrl?`<a href="${esc(i.incidentWebUrl)}" target="_blank" style="color:#0078d4;font-size:10px;">View &#8599;</a>`:''}</td>
+        </tr>
+        <tr id="inc-detail-${i.id}" style="display:none;background:#f8f9fa;">
+          <td colspan="6" style="padding:8px 12px;font-size:11px;color:#444;">${(i.alerts||[]).map(a=>`<div style="padding:2px 0;">&#9656; <b>${esc(a.title||'')}</b> — ${esc(a.serviceSource||'')} — ${a.createdDateTime?new Date(a.createdDateTime).toLocaleDateString():''}</div>`).join('')||'No alert details.'}</td>
+        </tr>`).join('') +
+        '</tbody></table>';
+    }
+
+    function toggleIncidentDetails(id) {
+      const row = document.getElementById('inc-detail-' + id);
+      if (row) row.style.display = row.style.display === 'none' ? 'table-row' : 'none';
+    }
+
+    async function fetchDefenderRecommendations() {
+      const listEl = document.getElementById('defRecsList');
+      try {
+        const res = await fetch('/api/defender-recommendations');
+        const data = await res.json();
+        if (data.error) { listEl.innerHTML = `<div style="color:#888;font-size:12px;">${esc(data.hint||data.error)}</div>`; return; }
+        const recs = data.recommendations || [];
+        document.getElementById('defRecsCount').textContent = recs.length;
+        window._defRecsAll = recs;
+        renderDefRecs(false);
+      } catch(e) { listEl.innerHTML = '<span style="color:#888;">Failed to load recommendations.</span>'; }
+    }
+
+    function renderDefRecs(expanded) {
+      const el = document.getElementById('defRecsList');
+      const recs = window._defRecsAll || [];
+      const show = expanded ? recs : recs.slice(0, 5);
+      const sevColor = s => s>=7||s==='high'?'#d13438':s>=4||s==='medium'?'#ff8c00':'#107c10';
+      el.innerHTML = show.map((r,idx) => {
+        const score = r.severityScore || r.remediationUrgencyScore || 0;
+        const scoreNum = typeof score === 'number' ? score : 0;
+        return `<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #f3f2f1;">
+          <span style="background:${sevColor(scoreNum)};color:white;min-width:32px;text-align:center;padding:2px 6px;border-radius:4px;font-size:10px;font-weight:700;">${scoreNum.toFixed ? scoreNum.toFixed(1) : scoreNum}</span>
+          <div style="flex:1;min-width:0;">
+            <div style="font-weight:600;font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${esc(r.recommendationName||r.title||'')}</div>
+            <div style="font-size:10px;color:#888;">${esc(r.productName||r.relatedComponent||'')}${r.exposedMachinesCount?' &middot; '+r.exposedMachinesCount+' devices':''}</div>
+          </div>
+          ${r.activeAlert?'<span style="background:#fde7e9;color:#d13438;padding:1px 6px;border-radius:4px;font-size:9px;font-weight:700;">ACTIVE ALERT</span>':''}
+          ${r.publicExploit?'<span style="background:#fff4ce;color:#8a6914;padding:1px 6px;border-radius:4px;font-size:9px;font-weight:700;">EXPLOIT</span>':''}
+        </div>`;
+      }).join('') || '<span style="color:#107c10;">&#9989; No recommendations found.</span>';
+    }
+
+    function toggleDefRecs() {
+      defRecsExpanded = !defRecsExpanded;
+      renderDefRecs(defRecsExpanded);
+      const btn = document.getElementById('defRecsToggleBtn');
+      if (btn) btn.innerHTML = defRecsExpanded ? '&#9650; Show less' : '&#9660; Show all';
+    }
+
+    async function fetchDefenderEndpointAlerts() {
+      const listEl = document.getElementById('defEndpointAlertsList');
+      const pillsEl = document.getElementById('defAlertPills');
+      try {
+        const res = await fetch('/api/security-alerts');
+        const data = await res.json();
+        // Filter to endpoint source
+        const alerts = (data.alerts || []).filter(a =>
+          !a.serviceSource || a.serviceSource === 'microsoftDefenderForEndpoint' ||
+          a.serviceSource === 'windowsDefenderAtp'
+        );
+        window._defEndpointAlertsAll = alerts;
+        const sHigh = alerts.filter(a=>a.severity==='high').length;
+        const sMed  = alerts.filter(a=>a.severity==='medium').length;
+        const sNew  = alerts.filter(a=>a.status==='new').length;
+        const pill = (l,v,bg,fg,f) => v>0?`<span class="intel-pill" style="background:${bg};color:${fg};" onclick="filterDefEndpointAlerts('${f}',event)">${v} ${l}</span>`:'';
+        pillsEl.innerHTML =
+          `<span class="intel-pill intel-pill-reset intel-pill-active" onclick="filterDefEndpointAlerts('all',event)">All ${alerts.length}</span>`+
+          pill('High',sHigh,'#fde7e9','#d13438','high')+
+          pill('Medium',sMed,'#fff4ce','#8a6914','medium')+
+          pill('New',sNew,'#eef6fc','#0078d4','new');
+        renderDefEndpointAlerts(alerts);
+      } catch(e) { listEl.innerHTML = '<span style="color:#888;">Failed to load endpoint alerts.</span>'; }
+    }
+
+    function filterDefEndpointAlerts(f, evt) {
+      document.querySelectorAll('#defAlertPills .intel-pill').forEach(p=>p.classList.remove('intel-pill-active'));
+      if (evt&&evt.target) evt.target.classList.add('intel-pill-active');
+      const all = window._defEndpointAlertsAll || [];
+      const filtered = f==='all'?all:f==='new'?all.filter(a=>a.status==='new'):all.filter(a=>a.severity===f);
+      renderDefEndpointAlerts(filtered);
+    }
+
+    function renderDefEndpointAlerts(alerts) {
+      const el = document.getElementById('defEndpointAlertsList');
+      if (!alerts.length) { el.innerHTML = '<span style="color:#107c10;">&#9989; No endpoint alerts.</span>'; return; }
+      const sevColor = s => s==='high'?'#d13438':s==='medium'?'#ff8c00':s==='low'?'#ffaa44':'#0078d4';
+      el.innerHTML = `<table style="width:100%;border-collapse:collapse;font-size:12px;">
+        <thead><tr style="border-bottom:2px solid #e0e0e0;">
+          <th style="text-align:left;padding:6px 4px;font-weight:600;">Alert</th>
+          <th style="text-align:left;padding:6px 4px;font-weight:600;">Severity</th>
+          <th style="text-align:left;padding:6px 4px;font-weight:600;">Status</th>
+          <th style="text-align:left;padding:6px 4px;font-weight:600;">Date</th>
+          <th></th>
+        </tr></thead><tbody>` +
+        alerts.slice(0,20).map(a => `<tr style="border-bottom:1px solid #f3f2f1;">
+          <td style="padding:7px 4px;font-weight:500;max-width:300px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${esc(a.title||'Alert')}</td>
+          <td style="padding:7px 4px;"><span style="background:${sevColor(a.severity)};color:white;padding:1px 6px;border-radius:4px;font-size:10px;font-weight:700;">${(a.severity||'').toUpperCase()}</span></td>
+          <td style="padding:7px 4px;color:#666;font-size:11px;">${esc(a.status||'')}</td>
+          <td style="padding:7px 4px;color:#888;font-size:10px;">${a.createdDateTime?new Date(a.createdDateTime).toLocaleDateString():'-'}</td>
+          <td style="padding:7px 4px;">${a.alertWebUrl?`<a href="${esc(a.alertWebUrl)}" target="_blank" style="color:#0078d4;font-size:10px;">View &#8599;</a>`:''}</td>
+        </tr>`).join('') + '</tbody></table>';
+    }
+
+    // ===== EMAIL SECURITY TAB =====
+    async function fetchEmailSecurityTab() {
+      const listEl = document.getElementById('emailThreatsList');
+      const topEl  = document.getElementById('emailTopTargetedList');
+      const pillsEl = document.getElementById('emailThreatPills');
+      try {
+        const res = await fetch('/api/email-threats');
+        const data = await res.json();
+        if (data.error) {
+          listEl.innerHTML = `<div style="color:#888;padding:12px;font-size:12px;">${esc(data.hint||data.error)}</div>`;
+          topEl.innerHTML = '';
+          return;
+        }
+        const s = data.summary || {};
+        document.getElementById('emailTotalThreats').textContent = s.total || 0;
+        document.getElementById('emailPhishing').textContent = s.phishing || 0;
+        document.getElementById('emailMalware').textContent = s.malware || 0;
+        document.getElementById('emailUsersTargeted').textContent = s.usersTargeted || 0;
+
+        window._emailThreatsAll = data.alerts || [];
+        const pill = (l,v,bg,fg,f) => v>0?`<span class="intel-pill" style="background:${bg};color:${fg};" onclick="filterEmailThreats('${f}',event)">${v} ${l}</span>`:'';
+        pillsEl.innerHTML =
+          `<span class="intel-pill intel-pill-reset intel-pill-active" onclick="filterEmailThreats('all',event)">&#128140; All ${s.total||0}</span>`+
+          pill('Phishing',s.phishing,'#fde7e9','#d13438','phishing')+
+          pill('Malware',s.malware,'#fde7e9','#8b0000','malware')+
+          pill('High',s.high,'#fde7e9','#d13438','high')+
+          pill('New',s.newAlerts,'#eef6fc','#0078d4','new');
+
+        // Top targeted users
+        const top = data.topTargeted || [];
+        topEl.innerHTML = top.length ? top.map(u =>
+          `<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid #f3f2f1;cursor:pointer;" onclick="openUserDetailModal('${esc(u.upn)}')">
+            <span style="font-size:12px;color:#0078d4;text-decoration:underline dotted;">${esc(u.upn)}</span>
+            <span style="background:#fde7e9;color:#d13438;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600;">${u.count} threat${u.count>1?'s':''}</span>
+          </div>`
+        ).join('') : '<span style="color:#107c10;font-size:12px;">&#9989; No targeted users identified.</span>';
+
+        renderEmailThreats(window._emailThreatsAll);
+      } catch(e) { listEl.innerHTML = '<span style="color:#888;">Failed to load email threats.</span>'; }
+    }
+
+    function filterEmailThreats(f, evt) {
+      document.querySelectorAll('#emailThreatPills .intel-pill').forEach(p=>p.classList.remove('intel-pill-active'));
+      if (evt&&evt.target) evt.target.classList.add('intel-pill-active');
+      const all = window._emailThreatsAll || [];
+      const filtered = f==='all'?all:f==='new'?all.filter(a=>a.status==='new'):f==='high'?all.filter(a=>a.severity==='high'):all.filter(a=>a.threatType===f);
+      renderEmailThreats(filtered);
+    }
+
+    function renderEmailThreats(alerts) {
+      const el = document.getElementById('emailThreatsList');
+      if (!alerts.length) { el.innerHTML = '<span style="color:#107c10;">&#9989; No email threats found.</span>'; return; }
+      const sevColor = s => s==='high'?'#d13438':s==='medium'?'#ff8c00':s==='low'?'#ffaa44':'#0078d4';
+      const typeColor = t => t==='phishing'?'#d13438':t==='malware'?'#8b0000':t==='spam'?'#8a6914':'#0078d4';
+      el.innerHTML = `<table style="width:100%;border-collapse:collapse;font-size:12px;">
+        <thead><tr style="border-bottom:2px solid #e0e0e0;">
+          <th style="text-align:left;padding:6px 4px;font-weight:600;">Alert / Subject</th>
+          <th style="text-align:left;padding:6px 4px;font-weight:600;">Type</th>
+          <th style="text-align:left;padding:6px 4px;font-weight:600;">Severity</th>
+          <th style="text-align:left;padding:6px 4px;font-weight:600;">Recipients</th>
+          <th style="text-align:left;padding:6px 4px;font-weight:600;">Date</th>
+          <th></th>
+        </tr></thead><tbody>` +
+        alerts.slice(0,30).map(a => `<tr style="border-bottom:1px solid #f3f2f1;">
+          <td style="padding:7px 4px;font-weight:500;max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${esc(a.title||'Alert')}</td>
+          <td style="padding:7px 4px;"><span style="background:${typeColor(a.threatType)};color:white;padding:1px 6px;border-radius:4px;font-size:10px;font-weight:700;">${(a.threatType||a.category||'').toUpperCase()}</span></td>
+          <td style="padding:7px 4px;"><span style="background:${sevColor(a.severity)};color:white;padding:1px 6px;border-radius:4px;font-size:10px;font-weight:700;">${(a.severity||'').toUpperCase()}</span></td>
+          <td style="padding:7px 4px;color:#666;font-size:11px;">${(a.recipients||[]).slice(0,2).map(r=>esc(r)).join(', ')+(a.recipients&&a.recipients.length>2?' +more':'')}</td>
+          <td style="padding:7px 4px;color:#888;font-size:10px;">${a.createdDateTime?new Date(a.createdDateTime).toLocaleDateString():'-'}</td>
+          <td style="padding:7px 4px;">${a.alertWebUrl?`<a href="${esc(a.alertWebUrl)}" target="_blank" style="color:#0078d4;font-size:10px;">View &#8599;</a>`:''}</td>
+        </tr>`).join('') + '</tbody></table>';
     }
 
     function renderSigninCharts(signins) {
