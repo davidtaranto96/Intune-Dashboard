@@ -1210,7 +1210,7 @@
           '<div style="font-size:10px;color:#666;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + esc(u.upn) + blockPct + '</div>' +
           countriesStr + failStr + lastFailStr +
           (extraHtml || '') +
-          (u.level === 'CRITICAL' || u.level === 'HIGH' ? userActionBtns(u.upn, u.name) : '') +
+          userActionBtns(u.upn, u.name) +
           '</div>' +
           '<div style="text-align:right;margin-left:8px;flex-shrink:0;">' +
           '<div style="font-size:14px;font-weight:700;color:#d13438;">' + metricValue + '</div>' +
