@@ -79,6 +79,15 @@
     .card.clickable { cursor: pointer; }
     .card.clickable:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.12); transform: translateY(-2px); }
     .card.clickable.active-filter { outline: 3px solid #0078d4; outline-offset: -3px; }
+    /* Language toggle */
+    .lang-toggle { display: flex; gap: 3px; align-items: center; background: rgba(255,255,255,0.12); border-radius: 20px; padding: 3px; }
+    .lang-btn { background: transparent; color: white; border: none; padding: 4px 10px; border-radius: 16px; cursor: pointer; font-size: 11px; font-weight: 500; transition: all 0.2s; opacity: 0.7; white-space: nowrap; }
+    .lang-btn:hover { opacity: 1; }
+    .lang-btn.lang-btn-active { background: white; color: #0078d4; opacity: 1; font-weight: 700; }
+    .login-lang-toggle { display: flex; gap: 3px; align-items: center; background: rgba(255,255,255,0.12); border-radius: 20px; padding: 3px; }
+    .login-lang-btn { background: transparent; color: white; border: none; padding: 4px 10px; border-radius: 16px; cursor: pointer; font-size: 11px; font-weight: 500; transition: all 0.2s; opacity: 0.7; white-space: nowrap; }
+    .login-lang-btn:hover { opacity: 1; }
+    .login-lang-btn.lang-btn-active { background: white; color: #1a237e; opacity: 1; font-weight: 700; }
     /* Clickable intel pills (Risky Users / Defender Alerts) */
     .intel-pill { padding: 3px 10px; border-radius: 10px; font-size: 10px; font-weight: 600; cursor: pointer; border: 2px solid transparent; transition: all 0.15s; display: inline-block; user-select: none; }
     .intel-pill:hover { opacity: 0.8; border-color: currentColor; }
@@ -329,50 +338,54 @@
   <div class="login-page" id="loginPage">
     <div class="login-header">
       <h1><div class="lock-icon">&#128274;</div> Intune Compliance Dashboard <span class="subtitle">JBKnowledge - Information Technology</span></h1>
+      <div class="login-lang-toggle">
+        <button class="login-lang-btn lang-btn-active" data-lang="en" onclick="setLanguage('en')">🇺🇸 EN</button>
+        <button class="login-lang-btn" data-lang="es" onclick="setLanguage('es')">🇦🇷 ES</button>
+      </div>
     </div>
     <div class="login-body">
       <div class="login-card" id="loginCard">
         <div class="login-lock">&#128274;</div>
-        <h2>Intune Compliance Dashboard</h2>
-        <p class="login-desc">Sign in with your JBKnowledge administrator account to monitor device compliance, manage policies, review sign-in logs, and export reports across your organization.</p>
+        <h2 data-i18n="login.title">Intune Compliance Dashboard</h2>
+        <p class="login-desc" data-i18n="login.desc">Sign in with your JBKnowledge administrator account to monitor device compliance, manage policies, review sign-in logs, and export reports across your organization.</p>
         <a href="/.auth/login/aad?post_login_redirect_uri=/&prompt=login" class="ms-login-btn">
-          <span class="ms-icon">&#127987;&#65039;</span> Sign in with Microsoft
+          <span class="ms-icon">&#127987;&#65039;</span><span data-i18n="login.btn"> Sign in with Microsoft</span>
         </a>
         <div class="login-features">
           <div class="login-feature">
             <div class="feat-icon">&#128187;</div>
-            <h4>Device Monitoring</h4>
-            <p>Track all managed devices and compliance status</p>
+            <h4 data-i18n="login.feat.devices.title">Device Monitoring</h4>
+            <p data-i18n="login.feat.devices.desc">Track all managed devices and compliance status</p>
           </div>
           <div class="login-feature">
             <div class="feat-icon">&#128203;</div>
-            <h4>Policy Management</h4>
-            <p>View and edit compliance &amp; conditional access policies</p>
+            <h4 data-i18n="login.feat.policies.title">Policy Management</h4>
+            <p data-i18n="login.feat.policies.desc">View and edit compliance &amp; conditional access policies</p>
           </div>
           <div class="login-feature">
             <div class="feat-icon">&#128680;</div>
-            <h4>Alerts</h4>
-            <p>Configurable alerts for non-compliant devices</p>
+            <h4 data-i18n="login.feat.alerts.title">Alerts</h4>
+            <p data-i18n="login.feat.alerts.desc">Configurable alerts for non-compliant devices</p>
           </div>
           <div class="login-feature">
             <div class="feat-icon">&#128273;</div>
-            <h4>Sign-in Logs</h4>
-            <p>Review login attempts and CA enforcement</p>
+            <h4 data-i18n="login.feat.signins.title">Sign-in Logs</h4>
+            <p data-i18n="login.feat.signins.desc">Review login attempts and CA enforcement</p>
           </div>
           <div class="login-feature">
             <div class="feat-icon">&#128200;</div>
-            <h4>Reports</h4>
-            <p>Export CSV reports by compliance state</p>
+            <h4 data-i18n="login.feat.reports.title">Reports</h4>
+            <p data-i18n="login.feat.reports.desc">Export CSV reports by compliance state</p>
           </div>
           <div class="login-feature">
             <div class="feat-icon">&#128260;</div>
-            <h4>Remote Sync</h4>
-            <p>Force device sync directly from dashboard</p>
+            <h4 data-i18n="login.feat.sync.title">Remote Sync</h4>
+            <p data-i18n="login.feat.sync.desc">Force device sync directly from dashboard</p>
           </div>
         </div>
         <div class="login-info">
-          <h4>&#8505;&#65039; About this tool</h4>
-          <p>The Intune Compliance Dashboard provides real-time visibility into Microsoft Intune managed devices and Entra ID security for JBKnowledge. Monitor compliance policies, conditional access enforcement, sign-in activity, and take action on non-compliant devices. Requires IT Administrator permissions.</p>
+          <h4 data-i18n="login.about.title">&#8505;&#65039; About this tool</h4>
+          <p data-i18n="login.about.desc">The Intune Compliance Dashboard provides real-time visibility into Microsoft Intune managed devices and Entra ID security for JBKnowledge. Monitor compliance policies, conditional access enforcement, sign-in activity, and take action on non-compliant devices. Requires IT Administrator permissions.</p>
         </div>
       </div>
     </div>
@@ -382,16 +395,20 @@
   <div class="dashboard" id="appRoot">
     <div class="header">
       <div>
-        <h1>Intune Compliance Dashboard</h1>
-        <div class="subtitle">JBKnowledge - Device Management</div>
+        <h1 data-i18n="app.title">Intune Compliance Dashboard</h1>
+        <div class="subtitle" data-i18n="app.subtitle">JBKnowledge - Device Management</div>
       </div>
       <div class="header-right">
         <div style="display:flex;flex-direction:column;align-items:flex-end;gap:2px;">
           <span class="last-updated" id="lastUpdated"></span>
           <span class="app-version" id="appVersion"></span>
         </div>
+        <div class="lang-toggle">
+          <button class="lang-btn lang-btn-active" data-lang="en" onclick="setLanguage('en')">🇺🇸 EN</button>
+          <button class="lang-btn" data-lang="es" onclick="setLanguage('es')">🇦🇷 ES</button>
+        </div>
         <button class="whats-new-btn" onclick="openWhatsNew()" title="What's new in this version">
-          &#128196; What's New
+          <span data-i18n="header.whats_new">&#128196; What's New</span>
           <span class="new-badge" id="newBadge" style="display:none;">!</span>
         </button>
         <button class="refresh-btn" id="refreshBtn" onclick="refreshAll()" title="Refresh all data">
@@ -401,17 +418,17 @@
           <div class="user-avatar" id="userAvatar">?</div>
           <span class="email" id="userEmail">Loading...</span>
         </div>
-        <button class="signout-btn" onclick="logout()">Sign Out</button>
+        <button class="signout-btn" onclick="logout()" data-i18n="header.sign_out">Sign Out</button>
       </div>
     </div>
 
     <div class="tabs">
-      <div class="tab active" data-tab="dashboard">Dashboard</div>
-      <div class="tab" data-tab="devices">Devices</div>
-      <div class="tab" data-tab="policies">Policies</div>
-      <div class="tab" data-tab="signins">Sign-in Logs</div>
-      <div class="tab" data-tab="alerts">Alerts</div>
-      <div class="tab" data-tab="reports">Reports</div>
+      <div class="tab active" data-tab="dashboard" data-i18n="tab.dashboard">Dashboard</div>
+      <div class="tab" data-tab="devices" data-i18n="tab.devices">Devices</div>
+      <div class="tab" data-tab="policies" data-i18n="tab.policies">Policies</div>
+      <div class="tab" data-tab="signins" data-i18n="tab.signins">Sign-in Logs</div>
+      <div class="tab" data-tab="alerts" data-i18n="tab.alerts">Alerts</div>
+      <div class="tab" data-tab="reports" data-i18n="tab.reports">Reports</div>
     </div>
 
     <div class="content">
@@ -421,12 +438,12 @@
           <button class="config-btn" onclick="openDashboardConfig()">&#9881; Configure Dashboard</button>
         </div>
         <div class="summary-cards">
-          <div class="card"><div class="label">Total Devices</div><div class="value blue" id="dashTotal">-</div></div>
-          <div class="card"><div class="label">Compliant</div><div class="value green" id="dashCompliant">-</div></div>
-          <div class="card"><div class="label">Non-Compliant</div><div class="value red" id="dashNonCompliant">-</div></div>
-          <div class="card"><div class="label">Grace Period</div><div class="value orange" id="dashGrace">-</div></div>
-          <div class="card"><div class="label">Active Policies</div><div class="value blue" id="dashPolicies">-</div></div>
-          <div class="card"><div class="label">Stale (7+ days)</div><div class="value red" id="dashStale">-</div></div>
+          <div class="card"><div class="label" data-i18n="dash.total_devices">Total Devices</div><div class="value blue" id="dashTotal">-</div></div>
+          <div class="card"><div class="label" data-i18n="dash.compliant">Compliant</div><div class="value green" id="dashCompliant">-</div></div>
+          <div class="card"><div class="label" data-i18n="dash.noncompliant">Non-Compliant</div><div class="value red" id="dashNonCompliant">-</div></div>
+          <div class="card"><div class="label" data-i18n="dash.grace">Grace Period</div><div class="value orange" id="dashGrace">-</div></div>
+          <div class="card"><div class="label" data-i18n="dash.policies">Active Policies</div><div class="value blue" id="dashPolicies">-</div></div>
+          <div class="card"><div class="label" data-i18n="dash.stale">Stale (7+ days)</div><div class="value red" id="dashStale">-</div></div>
         </div>
 
         <!-- Security Overview (populated by fetchSigninsForDashboard) -->
@@ -597,19 +614,19 @@
         <div id="signinRecommendation" style="display:none;background:#fff4ce;border-left:4px solid #ff8c00;padding:12px 16px;border-radius:8px;margin-bottom:16px;font-size:13px;"></div>
         <div id="signinDiagnostics" style="display:none;background:#eef6fc;border-left:4px solid #0078d4;padding:10px 14px;border-radius:6px;margin-bottom:12px;font-size:12px;color:#333;font-family:monospace;"></div>
         <div class="summary-cards" id="signinSummary" style="margin-bottom:12px;">
-          <div class="card clickable" onclick="signinQuickFilter('all')" data-sfilter="all"><div class="label">Total Sign-ins</div><div class="value blue" id="totalSignins">-</div></div>
-          <div class="card clickable" onclick="signinQuickFilter('success')" data-sfilter="success"><div class="label">Successful</div><div class="value green" id="successSignins">-</div></div>
-          <div class="card clickable" onclick="signinQuickFilter('blocked')" data-sfilter="blocked"><div class="label">Blocked</div><div class="value red" id="blockedSignins">-</div></div>
-          <div class="card clickable" onclick="signinQuickFilter('ca_blocked')" data-sfilter="ca_blocked"><div class="label">CA Blocked</div><div class="value red" id="caBlockedSignins">-</div></div>
-          <div class="card clickable" onclick="signinQuickFilter('mfa')" data-sfilter="mfa"><div class="label">MFA Required</div><div class="value orange" id="mfaSignins">-</div></div>
-          <div class="card clickable" onclick="signinQuickFilter('risky')" data-sfilter="risky"><div class="label">Risky</div><div class="value red" id="riskySignins">-</div></div>
+          <div class="card clickable" onclick="signinQuickFilter('all')" data-sfilter="all"><div class="label" data-i18n="si.total">Total Sign-ins</div><div class="value blue" id="totalSignins">-</div></div>
+          <div class="card clickable" onclick="signinQuickFilter('success')" data-sfilter="success"><div class="label" data-i18n="si.successful">Successful</div><div class="value green" id="successSignins">-</div></div>
+          <div class="card clickable" onclick="signinQuickFilter('blocked')" data-sfilter="blocked"><div class="label" data-i18n="si.blocked">Blocked</div><div class="value red" id="blockedSignins">-</div></div>
+          <div class="card clickable" onclick="signinQuickFilter('ca_blocked')" data-sfilter="ca_blocked"><div class="label" data-i18n="si.ca_blocked">CA Blocked</div><div class="value red" id="caBlockedSignins">-</div></div>
+          <div class="card clickable" onclick="signinQuickFilter('mfa')" data-sfilter="mfa"><div class="label" data-i18n="si.mfa">MFA Required</div><div class="value orange" id="mfaSignins">-</div></div>
+          <div class="card clickable" onclick="signinQuickFilter('risky')" data-sfilter="risky"><div class="label" data-i18n="si.risky">Risky</div><div class="value red" id="riskySignins">-</div></div>
         </div>
         <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;">
-          <button class="config-btn" onclick="signinQuickFilter('foreign')" title="Sign-ins from outside Argentina, US, and Latin America">&#127758; Foreign Countries Only</button>
-          <button class="config-btn" onclick="signinQuickFilter('highrisk')" title="High + medium risk sign-ins">&#9888; High Risk Only</button>
-          <button class="config-btn" onclick="signinQuickFilter('bruteforce')" title="Users with 3+ failed attempts">&#128273; Repeated Failures (3+)</button>
-          <button class="config-btn" onclick="signinQuickFilter('malicious')" title="Sign-ins flagged as from malicious IPs">&#128680; Malicious IP</button>
-          <button class="config-btn" onclick="signinQuickFilter('all')" style="background:#0078d4;color:white;border-color:#0078d4;">&#8634; Reset</button>
+          <button class="config-btn" onclick="signinQuickFilter('foreign')" data-i18n="si.filter.foreign">&#127758; Foreign Countries Only</button>
+          <button class="config-btn" onclick="signinQuickFilter('highrisk')" data-i18n="si.filter.highrisk">&#9888; High Risk Only</button>
+          <button class="config-btn" onclick="signinQuickFilter('bruteforce')" data-i18n="si.filter.bruteforce">&#128273; Repeated Failures (3+)</button>
+          <button class="config-btn" onclick="signinQuickFilter('malicious')" data-i18n="si.filter.malicious">&#128680; Malicious IP</button>
+          <button class="config-btn" onclick="signinQuickFilter('all')" style="background:#0078d4;color:white;border-color:#0078d4;" data-i18n="si.filter.reset">&#8634; Reset</button>
         </div>
         <div class="table-container">
           <div class="table-header">
@@ -617,7 +634,7 @@
             <div class="filter-group">
               <div class="search-wrapper">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-                <input type="text" class="search-box" id="signinSearch" placeholder="Search by user..." oninput="filterSignins()">
+                <input type="text" class="search-box" id="signinSearch" placeholder="Search by user..." oninput="filterSignins()" data-i18n-placeholder="si.search">
               </div>
               <select class="filter-select" id="signinFilter" onchange="fetchSignins()">
                 <option value="">All</option>
@@ -836,10 +853,21 @@
   <div class="modal-overlay" id="whatsNewModal">
     <div class="modal" style="max-width:580px;">
       <div class="modal-header">
-        <h2>&#128196; What's New</h2>
+        <h2 data-i18n="wn.title">&#128196; What's New</h2>
         <button class="modal-close" onclick="closeWhatsNew()">&times;</button>
       </div>
       <div style="max-height:65vh;overflow-y:auto;padding-right:4px;">
+
+        <div style="margin-bottom:24px;">
+          <div class="changelog-version">v3.1.0</div>
+          <div class="changelog-date">April 2026 &mdash; UX &amp; Bilingual Update</div>
+          <div class="changelog-item"><span class="changelog-tag new">New</span><span class="changelog-text"><strong>Bilingual Support (EN / ES)</strong> &mdash; Toggle between English and Español (Argentina) from both the login page and the main header. Preference saved automatically.</span></div>
+          <div class="changelog-item"><span class="changelog-tag new">New</span><span class="changelog-text"><strong>Clickable Security Intelligence Badges</strong> &mdash; Filter Risky Users by High/Medium/Low/At Risk and Defender Alerts by severity. Active badge highlighted with border and shadow.</span></div>
+          <div class="changelog-item"><span class="changelog-tag new">New</span><span class="changelog-text"><strong>Risky Users → User Detail Modal</strong> &mdash; Click any user row in the Risky Users card to open their full sign-in history, stats, and action buttons.</span></div>
+          <div class="changelog-item"><span class="changelog-tag fix">Fix</span><span class="changelog-text"><strong>NONE badge on Risky Users</strong> &mdash; Now correctly shows the risk state (AT RISK, CONFIRMED COMPROMISED) instead of "NONE" when risk level is unresolved.</span></div>
+          <div class="changelog-item"><span class="changelog-tag improve">Improve</span><span class="changelog-text"><strong>Summary Cards — Single Row</strong> &mdash; Sign-in counter cards (Total, Successful, Blocked, CA Blocked, MFA, Risky) now fit in one compact horizontal row.</span></div>
+          <div class="changelog-item"><span class="changelog-tag improve">Improve</span><span class="changelog-text"><strong>Secure Score Card</strong> &mdash; Now clickable; opens Microsoft Secure Score portal in a new tab.</span></div>
+        </div>
 
         <div style="margin-bottom:24px;">
           <div class="changelog-version">v3.0.0</div>
@@ -886,7 +914,7 @@
       </div>
       <div style="padding-top:16px;border-top:1px solid #e0e0e0;display:flex;justify-content:space-between;align-items:center;">
         <span style="font-size:11px;color:#999;">Last deploy detected on page load</span>
-        <button class="btn-primary" onclick="closeWhatsNew()">Got it</button>
+        <button class="btn-primary" onclick="closeWhatsNew()" data-i18n="wn.got_it">Got it</button>
       </div>
     </div>
   </div>
@@ -916,8 +944,8 @@
         <div id="confirmModalIcon" style="font-size:40px;text-align:center;margin-bottom:12px;"></div>
         <div id="confirmModalMsg" style="font-size:14px;color:#201f1e;margin-bottom:20px;line-height:1.6;"></div>
         <div style="display:flex;gap:10px;justify-content:flex-end;">
-          <button onclick="closeConfirmModal()" style="padding:8px 18px;border-radius:8px;border:1px solid #d2d0ce;background:white;cursor:pointer;font-size:13px;">Cancelar</button>
-          <button id="confirmModalOkBtn" style="padding:8px 18px;border-radius:8px;border:none;color:white;cursor:pointer;font-size:13px;font-weight:600;">Confirmar</button>
+          <button onclick="closeConfirmModal()" data-i18n="confirm.cancel" style="padding:8px 18px;border-radius:8px;border:1px solid #d2d0ce;background:white;cursor:pointer;font-size:13px;">Cancelar</button>
+          <button id="confirmModalOkBtn" data-i18n="confirm.ok" style="padding:8px 18px;border-radius:8px;border:none;color:white;cursor:pointer;font-size:13px;font-weight:600;">Confirmar</button>
         </div>
       </div>
     </div>
@@ -940,8 +968,89 @@
   <div class="toast" id="toast"></div>
 
   <script>
-    const APP_VERSION = 'v3.0.0';
+    const APP_VERSION = 'v3.1.0';
     const APP_BUILD_DATE = '2026-04-15';
+
+    // ===== BILINGUAL SUPPORT =====
+    const LANG = { current: localStorage.getItem('appLang') || 'en' };
+    const T = {
+      en: {
+        'login.title':'Intune Compliance Dashboard',
+        'login.desc':'Sign in with your JBKnowledge administrator account to monitor device compliance, manage policies, review sign-in logs, and export reports across your organization.',
+        'login.btn':' Sign in with Microsoft',
+        'login.feat.devices.title':'Device Monitoring','login.feat.devices.desc':'Track all managed devices and compliance status',
+        'login.feat.policies.title':'Policy Management','login.feat.policies.desc':'View and edit compliance &amp; conditional access policies',
+        'login.feat.alerts.title':'Alerts','login.feat.alerts.desc':'Configurable alerts for non-compliant devices',
+        'login.feat.signins.title':'Sign-in Logs','login.feat.signins.desc':'Review login attempts and CA enforcement',
+        'login.feat.reports.title':'Reports','login.feat.reports.desc':'Export CSV reports by compliance state',
+        'login.feat.sync.title':'Remote Sync','login.feat.sync.desc':'Force device sync directly from dashboard',
+        'login.about.title':'&#8505;&#65039; About this tool',
+        'login.about.desc':'The Intune Compliance Dashboard provides real-time visibility into Microsoft Intune managed devices and Entra ID security for JBKnowledge. Monitor compliance policies, conditional access enforcement, sign-in activity, and take action on non-compliant devices. Requires IT Administrator permissions.',
+        'app.title':'Intune Compliance Dashboard','app.subtitle':'JBKnowledge - Device Management',
+        'header.whats_new':'&#128196; What\'s New','header.sign_out':'Sign Out',
+        'tab.dashboard':'Dashboard','tab.devices':'Devices','tab.policies':'Policies',
+        'tab.signins':'Sign-in Logs','tab.alerts':'Alerts','tab.reports':'Reports',
+        'dash.total_devices':'Total Devices','dash.compliant':'Compliant','dash.noncompliant':'Non-Compliant',
+        'dash.grace':'Grace Period','dash.policies':'Active Policies','dash.stale':'Stale (7+ days)',
+        'si.total':'Total Sign-ins','si.successful':'Successful','si.blocked':'Blocked',
+        'si.ca_blocked':'CA Blocked','si.mfa':'MFA Required','si.risky':'Risky',
+        'si.filter.foreign':'&#127758; Foreign Countries Only','si.filter.highrisk':'&#9888; High Risk Only',
+        'si.filter.bruteforce':'&#128273; Repeated Failures (3+)','si.filter.malicious':'&#128680; Malicious IP',
+        'si.filter.reset':'&#8634; Reset','si.table.title':'Recent Sign-in Activity','si.search':'Search by user...',
+        'confirm.cancel':'Cancel','confirm.ok':'Confirm',
+        'wn.title':'&#128196; What\'s New','wn.got_it':'Got it',
+      },
+      es: {
+        'login.title':'Panel de Cumplimiento Intune',
+        'login.desc':'Iniciá sesión con tu cuenta de administrador de JBKnowledge para monitorear el cumplimiento de dispositivos, gestionar políticas, revisar registros de acceso y exportar reportes de toda la organización.',
+        'login.btn':' Iniciar sesión con Microsoft',
+        'login.feat.devices.title':'Monitoreo de Dispositivos','login.feat.devices.desc':'Seguí todos los dispositivos administrados y su estado de cumplimiento',
+        'login.feat.policies.title':'Gestión de Políticas','login.feat.policies.desc':'Visualizá y editá políticas de cumplimiento y acceso condicional',
+        'login.feat.alerts.title':'Alertas','login.feat.alerts.desc':'Alertas configurables para dispositivos no conformes',
+        'login.feat.signins.title':'Registros de Acceso','login.feat.signins.desc':'Revisá intentos de inicio de sesión y aplicación de CA',
+        'login.feat.reports.title':'Reportes','login.feat.reports.desc':'Exportá reportes CSV por estado de cumplimiento',
+        'login.feat.sync.title':'Sincronización Remota','login.feat.sync.desc':'Forzá la sincronización de dispositivos directamente desde el panel',
+        'login.about.title':'&#8505;&#65039; Sobre esta herramienta',
+        'login.about.desc':'El Panel de Cumplimiento Intune brinda visibilidad en tiempo real de los dispositivos administrados por Microsoft Intune y la seguridad de Entra ID para JBKnowledge. Supervisá políticas de cumplimiento, acceso condicional, actividad de inicio de sesión y tomá acción sobre dispositivos no conformes. Requiere permisos de Administrador de TI.',
+        'app.title':'Panel de Cumplimiento Intune','app.subtitle':'JBKnowledge - Gestión de Dispositivos',
+        'header.whats_new':'&#128196; Novedades','header.sign_out':'Cerrar Sesión',
+        'tab.dashboard':'Panel','tab.devices':'Dispositivos','tab.policies':'Políticas',
+        'tab.signins':'Registros de Acceso','tab.alerts':'Alertas','tab.reports':'Reportes',
+        'dash.total_devices':'Total Dispositivos','dash.compliant':'Conformes','dash.noncompliant':'No Conformes',
+        'dash.grace':'Período de Gracia','dash.policies':'Políticas Activas','dash.stale':'Inactivos (7+ días)',
+        'si.total':'Total Accesos','si.successful':'Exitosos','si.blocked':'Bloqueados',
+        'si.ca_blocked':'Bloq. por CA','si.mfa':'MFA Requerido','si.risky':'Riesgosos',
+        'si.filter.foreign':'&#127758; Solo Países Extranjeros','si.filter.highrisk':'&#9888; Solo Alto Riesgo',
+        'si.filter.bruteforce':'&#128273; Fallas Repetidas (3+)','si.filter.malicious':'&#128680; IP Maliciosa',
+        'si.filter.reset':'&#8634; Restablecer','si.table.title':'Actividad Reciente de Acceso','si.search':'Buscar por usuario...',
+        'confirm.cancel':'Cancelar','confirm.ok':'Confirmar',
+        'wn.title':'&#128196; Novedades','wn.got_it':'Entendido',
+      }
+    };
+    function t(key) { return (T[LANG.current] || T.en)[key] || ''; }
+    function setLanguage(lang) {
+      LANG.current = lang;
+      localStorage.setItem('appLang', lang);
+      document.documentElement.lang = lang;
+      // Update all toggle buttons (both login and main)
+      document.querySelectorAll('.lang-btn, .login-lang-btn').forEach(btn => {
+        btn.classList.toggle('lang-btn-active', btn.dataset.lang === lang);
+      });
+      // Translate static elements
+      document.querySelectorAll('[data-i18n]').forEach(el => {
+        const v = t(el.dataset.i18n);
+        if (v) el.innerHTML = v;
+      });
+      // Translate placeholder attributes
+      document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+        const v = t(el.dataset.i18nPlaceholder);
+        if (v) el.placeholder = v;
+      });
+    }
+    function initLanguage() {
+      const saved = localStorage.getItem('appLang') || 'en';
+      setLanguage(saved);
+    }
 
     let allDevices = [];
     let allPolicies = {};
@@ -2753,6 +2862,7 @@
     loadDashboardConfig();
     loadNotifySettings();
     initVersionInfo();
+    initLanguage();
     checkAuth();
   </script>
 </body>
