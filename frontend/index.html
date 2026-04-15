@@ -1378,26 +1378,50 @@
       const sevColors = { critical: '#d13438', high: '#e74c00', medium: '#ff8c00', info: '#0078d4' };
       const sevLabels = { critical: 'URGENTE', high: 'ALTA', medium: 'MEDIA', info: 'INFO' };
 
+      const PREVIEW_COUNT = 2; // show first 2 collapsed, rest hidden
+
+      const recHtml = recs.map((r, idx) => {
+        const c = sevColors[r.severity];
+        return '<div class="rec-item" style="border-left:4px solid ' + c + ';background:' + c + '08;border-radius:0 8px 8px 0;padding:10px 14px;' + (idx >= PREVIEW_COUNT ? 'display:none;' : '') + '">' +
+          '<div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">' +
+          '<span style="font-size:14px;">' + r.icon + '</span>' +
+          '<span style="background:' + c + ';color:white;padding:1px 6px;border-radius:6px;font-size:9px;font-weight:700;">' + sevLabels[r.severity] + '</span>' +
+          '<strong style="font-size:12px;color:#201f1e;">' + r.title + '</strong>' +
+          '</div>' +
+          '<div style="font-size:11px;color:#555;margin-bottom:' + (r.action ? '4px' : '0') + ';">' + r.detail + '</div>' +
+          (r.action ? '<details style="margin-top:4px;"><summary style="font-size:10px;color:#0078d4;cursor:pointer;">Ver cómo hacerlo</summary><div style="font-size:10px;color:#0078d4;background:#eef6fc;padding:5px 8px;border-radius:6px;margin-top:3px;">' + r.action + '</div></details>' : '') +
+          '</div>';
+      }).join('');
+
+      const hiddenCount = Math.max(0, recs.length - PREVIEW_COUNT);
+
       el.innerHTML =
-        '<div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">' +
-        '<h3 style="margin:0;font-size:16px;color:#201f1e;">&#128737; Recomendaciones de Seguridad</h3>' +
-        '<span style="font-size:12px;color:#666;">Basadas en los datos analizados</span>' +
+        '<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;cursor:pointer;" onclick="toggleInsightRecs(this)">' +
+        '<h3 style="margin:0;font-size:14px;color:#201f1e;">&#128737; Recomendaciones de Seguridad</h3>' +
+        '<span style="font-size:11px;color:#666;">(' + recs.length + ' total)</span>' +
+        '<span style="margin-left:auto;font-size:11px;color:#0078d4;" id="recsToggleLabel">' + (hiddenCount > 0 ? '&#9660; Ver ' + hiddenCount + ' más' : '') + '</span>' +
         '</div>' +
-        '<div style="display:flex;flex-direction:column;gap:10px;">' +
-        recs.map(r => {
-          const c = sevColors[r.severity];
-          return '<div style="border-left:4px solid ' + c + ';background:' + c + '08;border-radius:0 8px 8px 0;padding:12px 16px;">' +
-            '<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">' +
-            '<span style="font-size:16px;">' + r.icon + '</span>' +
-            '<span style="background:' + c + ';color:white;padding:1px 6px;border-radius:6px;font-size:9px;font-weight:700;">' + sevLabels[r.severity] + '</span>' +
-            '<strong style="font-size:13px;color:#201f1e;">' + r.title + '</strong>' +
-            '</div>' +
-            '<div style="font-size:12px;color:#444;margin-bottom:' + (r.action ? '6px' : '0') + ';">' + r.detail + '</div>' +
-            (r.action ? '<div style="font-size:11px;color:#0078d4;background:#eef6fc;padding:6px 10px;border-radius:6px;margin-top:4px;"><strong>Cómo:</strong> ' + r.action + '</div>' : '') +
-            '</div>';
-        }).join('') +
-        '</div>';
+        '<div style="display:flex;flex-direction:column;gap:8px;" id="recsContainer">' + recHtml + '</div>';
       el.style.display = 'block';
+    }
+
+    function toggleInsightRecs(header) {
+      const container = document.getElementById('recsContainer');
+      const label = document.getElementById('recsToggleLabel');
+      if (!container) return;
+      const hidden = container.querySelectorAll('.rec-item[style*="display:none"]');
+      const visible = container.querySelectorAll('.rec-item:not([style*="display:none"])');
+      if (hidden.length > 0) {
+        // Expand all
+        hidden.forEach(el => el.style.display = '');
+        if (label) label.innerHTML = '&#9650; Ver menos';
+      } else {
+        // Collapse back to PREVIEW_COUNT=2
+        const items = container.querySelectorAll('.rec-item');
+        items.forEach((el, i) => { if (i >= 2) el.style.display = 'none'; });
+        const hiddenCount = items.length - 2;
+        if (label) label.innerHTML = hiddenCount > 0 ? '&#9660; Ver ' + hiddenCount + ' más' : '';
+      }
     }
 
     function exportInsightsCSV() {
