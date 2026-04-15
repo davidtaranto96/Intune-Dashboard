@@ -579,22 +579,22 @@
           <div id="insightsGrid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;"></div>
           <div id="insightsRecommendations" style="display:none;margin-top:18px;border-top:2px solid #edebe9;padding-top:16px;"></div>
         </div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;">
-          <button class="config-btn" onclick="signinQuickFilter('foreign')" title="Sign-ins from outside Argentina, US, and Latin America">&#127758; Foreign Countries Only</button>
-          <button class="config-btn" onclick="signinQuickFilter('highrisk')" title="High + medium risk sign-ins">&#9888; High Risk Only</button>
-          <button class="config-btn" onclick="signinQuickFilter('bruteforce')" title="Users with 3+ failed attempts">&#128273; Repeated Failures (3+)</button>
-          <button class="config-btn" onclick="signinQuickFilter('malicious')" title="Sign-ins flagged as from malicious IPs">&#128680; Malicious IP</button>
-          <button class="config-btn" onclick="signinQuickFilter('all')" style="background:#0078d4;color:white;border-color:#0078d4;">&#8634; Reset</button>
-        </div>
         <div id="signinRecommendation" style="display:none;background:#fff4ce;border-left:4px solid #ff8c00;padding:12px 16px;border-radius:8px;margin-bottom:16px;font-size:13px;"></div>
         <div id="signinDiagnostics" style="display:none;background:#eef6fc;border-left:4px solid #0078d4;padding:10px 14px;border-radius:6px;margin-bottom:12px;font-size:12px;color:#333;font-family:monospace;"></div>
-        <div class="summary-cards" id="signinSummary" style="margin-bottom:16px;">
+        <div class="summary-cards" id="signinSummary" style="margin-bottom:12px;">
           <div class="card clickable" onclick="signinQuickFilter('all')" data-sfilter="all"><div class="label">Total Sign-ins</div><div class="value blue" id="totalSignins">-</div></div>
           <div class="card clickable" onclick="signinQuickFilter('success')" data-sfilter="success"><div class="label">Successful</div><div class="value green" id="successSignins">-</div></div>
           <div class="card clickable" onclick="signinQuickFilter('blocked')" data-sfilter="blocked"><div class="label">Blocked</div><div class="value red" id="blockedSignins">-</div></div>
           <div class="card clickable" onclick="signinQuickFilter('ca_blocked')" data-sfilter="ca_blocked"><div class="label">CA Blocked</div><div class="value red" id="caBlockedSignins">-</div></div>
           <div class="card clickable" onclick="signinQuickFilter('mfa')" data-sfilter="mfa"><div class="label">MFA Required</div><div class="value orange" id="mfaSignins">-</div></div>
           <div class="card clickable" onclick="signinQuickFilter('risky')" data-sfilter="risky"><div class="label">Risky</div><div class="value red" id="riskySignins">-</div></div>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;">
+          <button class="config-btn" onclick="signinQuickFilter('foreign')" title="Sign-ins from outside Argentina, US, and Latin America">&#127758; Foreign Countries Only</button>
+          <button class="config-btn" onclick="signinQuickFilter('highrisk')" title="High + medium risk sign-ins">&#9888; High Risk Only</button>
+          <button class="config-btn" onclick="signinQuickFilter('bruteforce')" title="Users with 3+ failed attempts">&#128273; Repeated Failures (3+)</button>
+          <button class="config-btn" onclick="signinQuickFilter('malicious')" title="Sign-ins flagged as from malicious IPs">&#128680; Malicious IP</button>
+          <button class="config-btn" onclick="signinQuickFilter('all')" style="background:#0078d4;color:white;border-color:#0078d4;">&#8634; Reset</button>
         </div>
         <div class="table-container">
           <div class="table-header">
