@@ -1529,10 +1529,10 @@
       const uname = esc(s.userDisplayName || s.userPrincipalName || '');
       const actionBar = '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;padding:12px;background:#fafafa;border-radius:10px;border:1px solid #edebe9;">' +
         '<span style="font-size:12px;font-weight:600;color:#201f1e;display:flex;align-items:center;margin-right:auto;">&#9881; Quick Actions</span>' +
-        '<button class="action-btn action-danger" onclick="executeUserAction(\'block\',\'' + esc(uid) + '\',\'' + uname + '\')">&#128683; Block User</button>' +
-        '<button class="action-btn action-warning" onclick="executeUserAction(\'reset\',\'' + esc(uid) + '\',\'' + uname + '\')">&#128273; Force Password Reset</button>' +
-        '<button class="action-btn action-info" onclick="executeUserAction(\'revoke\',\'' + esc(uid) + '\',\'' + uname + '\')">&#128274; Revoke Sessions</button>' +
-        '<button class="action-btn action-critical" onclick="executeUserAction(\'compromised\',\'' + esc(uid) + '\',\'' + uname + '\')">&#9888; Confirm Compromised</button>' +
+        '<button class="action-btn action-danger" onclick="executeUserAction(\'block\',\'' + esc(uid) + '\',\'' + uname + '\',event)">&#128683; Block User</button>' +
+        '<button class="action-btn action-warning" onclick="executeUserAction(\'reset\',\'' + esc(uid) + '\',\'' + uname + '\',event)">&#128273; Force Password Reset</button>' +
+        '<button class="action-btn action-info" onclick="executeUserAction(\'revoke\',\'' + esc(uid) + '\',\'' + uname + '\',event)">&#128274; Revoke Sessions</button>' +
+        '<button class="action-btn action-critical" onclick="executeUserAction(\'compromised\',\'' + esc(uid) + '\',\'' + uname + '\',event)">&#9888; Confirm Compromised</button>' +
         '</div>';
 
       document.getElementById('signinModalContent').innerHTML = actionBar +
@@ -1577,7 +1577,7 @@
     function closeSigninModal() { document.getElementById('signinModal').classList.remove('show'); }
 
     // ===== SECURITY ACTION BUTTONS =====
-    async function executeUserAction(action, userId, displayName) {
+    async function executeUserAction(action, userId, displayName, evtOverride) {
       const actions = {
         block: { endpoint: '/api/block-user', label: 'BLOCK', confirm: 'Are you sure you want to DISABLE the account "' + displayName + '"?\n\nThey will be IMMEDIATELY locked out of all Microsoft 365 services.\n\nThis action can be reversed with Enable User.' },
         enable: { endpoint: '/api/enable-user', label: 'ENABLE', confirm: 'Re-enable the account "' + displayName + '"?\n\nThey will be able to sign in again.' },
@@ -1590,10 +1590,11 @@
       if (!act) return;
       if (!confirm(act.confirm)) return;
 
-      // Find the clicked button and show spinner
-      event.target.disabled = true;
-      const origText = event.target.innerHTML;
-      event.target.innerHTML = '&#8987; Processing...';
+      // Capture button ref BEFORE any await — event.target goes stale after async gaps
+      const activeEvent = evtOverride || event;
+      const btn = activeEvent && activeEvent.target ? activeEvent.target : null;
+      const origText = btn ? btn.innerHTML : '';
+      if (btn) { btn.disabled = true; btn.innerHTML = '&#8987; ...'; }
 
       try {
         const res = await fetch(act.endpoint, {
@@ -1603,27 +1604,33 @@
         });
         const data = await res.json();
         if (data.success) {
-          showToast(act.label + ' executed on ' + displayName + ' successfully');
-          event.target.innerHTML = '&#9989; Done';
-          setTimeout(() => { event.target.innerHTML = origText; event.target.disabled = false; }, 3000);
+          showToast('✔ ' + act.label + ': ' + displayName);
+          if (btn) {
+            btn.innerHTML = '&#9989; Done';
+            setTimeout(() => { btn.innerHTML = origText; btn.disabled = false; }, 3000);
+          }
         } else {
-          showToast('Error: ' + (data.error || 'Unknown error').substring(0, 100));
-          event.target.innerHTML = origText;
-          event.target.disabled = false;
+          const errMsg = data.error || 'Unknown error';
+          const hint = data.hint ? ' — ' + data.hint : '';
+          showToast('Error: ' + (errMsg + hint).substring(0, 150));
+          if (btn) { btn.innerHTML = origText; btn.disabled = false; }
         }
       } catch (e) {
-        showToast('Error: ' + e.message);
-        event.target.innerHTML = origText;
-        event.target.disabled = false;
+        showToast('Network error: ' + e.message);
+        if (btn) { btn.innerHTML = origText; btn.disabled = false; }
       }
     }
 
     // Helper: inline action buttons for Smart Insights rows
+    // Store user data in a registry to avoid quote escaping issues in onclick attributes
+    window._actionUserRegistry = {};
     function userActionBtns(userId, name) {
+      const key = 'u_' + btoa(encodeURIComponent(userId)).replace(/[^a-zA-Z0-9]/g, '').substring(0, 16);
+      window._actionUserRegistry[key] = { userId, name };
       return '<div style="display:flex;gap:4px;margin-top:3px;">' +
-        '<button class="action-btn action-danger" style="padding:2px 6px;font-size:9px;" onclick="event.stopPropagation();executeUserAction(\'block\',\'' + esc(userId) + '\',\'' + esc(name) + '\')">Block</button>' +
-        '<button class="action-btn action-warning" style="padding:2px 6px;font-size:9px;" onclick="event.stopPropagation();executeUserAction(\'reset\',\'' + esc(userId) + '\',\'' + esc(name) + '\')">Reset PW</button>' +
-        '<button class="action-btn action-info" style="padding:2px 6px;font-size:9px;" onclick="event.stopPropagation();executeUserAction(\'revoke\',\'' + esc(userId) + '\',\'' + esc(name) + '\')">Revoke</button>' +
+        '<button class="action-btn action-danger" style="padding:2px 6px;font-size:9px;" onclick="event.stopPropagation();(function(e){var r=window._actionUserRegistry[\'' + key + '\'];executeUserAction(\'block\',r.userId,r.name,e);})(event)">Block</button>' +
+        '<button class="action-btn action-warning" style="padding:2px 6px;font-size:9px;" onclick="event.stopPropagation();(function(e){var r=window._actionUserRegistry[\'' + key + '\'];executeUserAction(\'reset\',r.userId,r.name,e);})(event)">Reset PW</button>' +
+        '<button class="action-btn action-info" style="padding:2px 6px;font-size:9px;" onclick="event.stopPropagation();(function(e){var r=window._actionUserRegistry[\'' + key + '\'];executeUserAction(\'revoke\',r.userId,r.name,e);})(event)">Revoke</button>' +
         '</div>';
     }
 
@@ -1739,8 +1746,8 @@
             '<div style="font-size:10px;color:#666;">' + esc(u.userPrincipalName || '') + '</div></div>' +
             '<div style="display:flex;align-items:center;gap:6px;">' +
             '<span style="background:' + rlColor + ';color:white;padding:1px 6px;border-radius:6px;font-size:9px;font-weight:700;">' + (u.riskLevel || '').toUpperCase() + '</span>' +
-            '<button class="action-btn action-danger" style="padding:2px 6px;font-size:9px;" onclick="executeUserAction(\'block\',\'' + esc(u.id) + '\',\'' + esc(u.userDisplayName || '') + '\')">Block</button>' +
-            '<button class="action-btn action-warning" style="padding:2px 6px;font-size:9px;" onclick="executeUserAction(\'reset\',\'' + esc(u.id) + '\',\'' + esc(u.userDisplayName || '') + '\')">Reset</button>' +
+            '<button class="action-btn action-danger" style="padding:2px 6px;font-size:9px;" onclick="executeUserAction(\'block\',\'' + esc(u.id) + '\',\'' + esc(u.userDisplayName || '') + '\',event)">Block</button>' +
+            '<button class="action-btn action-warning" style="padding:2px 6px;font-size:9px;" onclick="executeUserAction(\'reset\',\'' + esc(u.id) + '\',\'' + esc(u.userDisplayName || '') + '\',event)">Reset</button>' +
             '</div></div>';
         }).join('');
       } catch (e) { list.innerHTML = '<span style="color:#888;">Failed to load.</span>'; }
