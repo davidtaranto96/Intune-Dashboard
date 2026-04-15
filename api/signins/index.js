@@ -102,6 +102,7 @@ module.exports = async function (context, req) {
 
       return {
         id: s.id,
+        userId: s.userId,
         createdDateTime: s.createdDateTime,
         userDisplayName: s.userDisplayName,
         userPrincipalName: s.userPrincipalName,

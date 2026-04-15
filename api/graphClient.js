@@ -37,7 +37,7 @@ async function getAccessToken() {
   return cachedToken;
 }
 
-async function graphRequest(endpoint, method = 'GET', body = null) {
+async function graphRequest(endpoint, method = 'GET', body = null, apiVersion = 'v1.0') {
   const token = await getAccessToken();
   const options = {
     method,
@@ -51,7 +51,7 @@ async function graphRequest(endpoint, method = 'GET', body = null) {
     options.body = JSON.stringify(body);
   }
 
-  const response = await fetch(`https://graph.microsoft.com/v1.0${endpoint}`, options);
+  const response = await fetch(`https://graph.microsoft.com/${apiVersion}${endpoint}`, options);
 
   if (!response.ok) {
     const error = await response.text();

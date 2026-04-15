@@ -284,6 +284,14 @@
     .dash-section-title { font-size: 15px; font-weight: 600; color: #333; margin-bottom: 12px; margin-top: 8px; }
     .config-btn { background: white; border: 1px solid #ddd; color: #555; padding: 8px 14px; border-radius: 8px; cursor: pointer; font-size: 13px; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s; }
     .config-btn:hover { border-color: #0078d4; color: #0078d4; }
+    .action-btn { padding: 5px 12px; border-radius: 6px; border: none; cursor: pointer; font-size: 11px; font-weight: 600; transition: all 0.2s; white-space: nowrap; }
+    .action-btn:hover { opacity: 0.85; transform: translateY(-1px); }
+    .action-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+    .action-danger { background: #d13438; color: white; }
+    .action-warning { background: #ff8c00; color: white; }
+    .action-info { background: #0078d4; color: white; }
+    .action-critical { background: #8b0000; color: white; }
+    .action-success { background: #107c10; color: white; }
     .config-section { padding: 16px 0; border-bottom: 1px solid #f0f0f0; }
     .config-section:last-child { border-bottom: none; }
     .config-section h4 { font-size: 13px; font-weight: 600; color: #333; margin-bottom: 12px; }
@@ -416,6 +424,38 @@
             <div class="security-card sec-ca clickable" onclick="openSecurityFilter('ca')" style="cursor:pointer;"><div class="sc-label">CA Blocked</div><div class="sc-value" id="secCACount">-</div><div class="sc-sub">Conditional access</div></div>
           </div>
           <div id="dashSecurityNote" style="display:none;font-size:12px;color:#999;font-style:italic;margin-top:4px;"></div>
+        </div>
+
+        <!-- Security Intelligence (Secure Score, Risky Users, Defender Alerts) -->
+        <div id="dashSecurityIntel" style="display:none;margin-bottom:24px;">
+          <div class="dash-section-title">&#128737; Security Intelligence <span style="font-size:11px;font-weight:400;color:#999;">(Microsoft Secure Score, Risky Users, Defender Alerts)</span></div>
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;">
+            <!-- Secure Score -->
+            <div id="secureScoreCard" style="background:white;border-radius:12px;padding:20px;box-shadow:0 1px 3px rgba(0,0,0,0.08);text-align:center;">
+              <div style="font-size:13px;font-weight:600;color:#201f1e;margin-bottom:12px;">&#127919; Microsoft Secure Score</div>
+              <div id="secureScoreGauge" style="position:relative;width:120px;height:120px;margin:0 auto 10px;">
+                <svg viewBox="0 0 120 120" style="transform:rotate(-90deg);">
+                  <circle cx="60" cy="60" r="52" fill="none" stroke="#f0f0f0" stroke-width="10"/>
+                  <circle id="secureScoreArc" cx="60" cy="60" r="52" fill="none" stroke="#0078d4" stroke-width="10" stroke-dasharray="0 327" stroke-linecap="round"/>
+                </svg>
+                <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:22px;font-weight:700;color:#0078d4;" id="secureScorePct">--</div>
+              </div>
+              <div id="secureScoreDetail" style="font-size:11px;color:#666;">Loading...</div>
+              <div id="secureScoreTop" style="margin-top:10px;text-align:left;font-size:11px;display:none;"></div>
+            </div>
+            <!-- Risky Users -->
+            <div id="riskyUsersCard" style="background:white;border-radius:12px;padding:20px;box-shadow:0 1px 3px rgba(0,0,0,0.08);">
+              <div style="font-size:13px;font-weight:600;color:#201f1e;margin-bottom:12px;">&#9888;&#65039; Risky Users <span style="font-size:10px;color:#999;">(Identity Protection)</span></div>
+              <div id="riskyUsersSummary" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;"></div>
+              <div id="riskyUsersList" style="max-height:250px;overflow-y:auto;font-size:11px;">Loading...</div>
+            </div>
+            <!-- Defender Alerts -->
+            <div id="defenderAlertsCard" style="background:white;border-radius:12px;padding:20px;box-shadow:0 1px 3px rgba(0,0,0,0.08);">
+              <div style="font-size:13px;font-weight:600;color:#201f1e;margin-bottom:12px;">&#128737; Defender Alerts</div>
+              <div id="defenderAlertsSummary" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;"></div>
+              <div id="defenderAlertsList" style="max-height:250px;overflow-y:auto;font-size:11px;">Loading...</div>
+            </div>
+          </div>
         </div>
 
         <!-- Sign-in Analytics Charts -->
@@ -787,6 +827,16 @@
       <div style="max-height:65vh;overflow-y:auto;padding-right:4px;">
 
         <div style="margin-bottom:24px;">
+          <div class="changelog-version">v3.0.0</div>
+          <div class="changelog-date">April 2026 &mdash; Security Actions &amp; Intelligence Update</div>
+          <div class="changelog-item"><span class="changelog-tag new">New</span><span class="changelog-text"><strong>Quick Security Actions</strong> &mdash; Block User, Force Password Reset, Revoke Sessions, and Confirm Compromised buttons now available directly from sign-in detail modal and Smart Insights cards.</span></div>
+          <div class="changelog-item"><span class="changelog-tag new">New</span><span class="changelog-text"><strong>Security Intelligence Panel</strong> on Dashboard &mdash; Microsoft Secure Score gauge, Risky Users from Identity Protection, and Defender Alerts, all in real-time.</span></div>
+          <div class="changelog-item"><span class="changelog-tag new">New</span><span class="changelog-text"><strong>Smart Insights v2</strong> &mdash; risk badges (CRITICAL/HIGH/MEDIUM/LOW), top failure reason, block rate %, configurable top 5/10/15/20, dynamic security recommendations panel.</span></div>
+          <div class="changelog-item"><span class="changelog-tag improve">Improve</span><span class="changelog-text"><strong>Sign-in Time Range</strong> now works correctly &mdash; fixed pagination and ISO timestamp format, supports up to Top 10000 records over 30 days.</span></div>
+          <div class="changelog-item"><span class="changelog-tag improve">Improve</span><span class="changelog-text"><strong>Layout</strong> &mdash; Smart Insights moved above filter bar; filter buttons now sit directly above the activity table they control.</span></div>
+        </div>
+
+        <div style="margin-bottom:24px;">
           <div class="changelog-version">v2.5.0</div>
           <div class="changelog-date">April 2026 &mdash; Security &amp; Analytics Update</div>
           <div class="changelog-item"><span class="changelog-tag new">New</span><span class="changelog-text"><strong>Sign-in Analytics Charts</strong> on Dashboard &mdash; see where your users log in from (by country) and why sign-ins are being blocked (wrong password, MFA, CA policy, etc.)</span></div>
@@ -843,8 +893,8 @@
   <div class="toast" id="toast"></div>
 
   <script>
-    const APP_VERSION = 'v2.6.0';
-    const APP_BUILD_DATE = '2026-04-13';
+    const APP_VERSION = 'v3.0.0';
+    const APP_BUILD_DATE = '2026-04-15';
 
     let allDevices = [];
     let allPolicies = {};
@@ -1160,6 +1210,7 @@
           '<div style="font-size:10px;color:#666;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + esc(u.upn) + blockPct + '</div>' +
           countriesStr + failStr + lastFailStr +
           (extraHtml || '') +
+          (u.level === 'CRITICAL' || u.level === 'HIGH' ? userActionBtns(u.upn, u.name) : '') +
           '</div>' +
           '<div style="text-align:right;margin-left:8px;flex-shrink:0;">' +
           '<div style="font-size:14px;font-weight:700;color:#d13438;">' + metricValue + '</div>' +
@@ -1474,7 +1525,17 @@
         caPoliciesHtml += '</div>';
       }
 
-      document.getElementById('signinModalContent').innerHTML =
+      const uid = s.userId || s.userPrincipalName;
+      const uname = esc(s.userDisplayName || s.userPrincipalName || '');
+      const actionBar = '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;padding:12px;background:#fafafa;border-radius:10px;border:1px solid #edebe9;">' +
+        '<span style="font-size:12px;font-weight:600;color:#201f1e;display:flex;align-items:center;margin-right:auto;">&#9881; Quick Actions</span>' +
+        '<button class="action-btn action-danger" onclick="executeUserAction(\'block\',\'' + esc(uid) + '\',\'' + uname + '\')">&#128683; Block User</button>' +
+        '<button class="action-btn action-warning" onclick="executeUserAction(\'reset\',\'' + esc(uid) + '\',\'' + uname + '\')">&#128273; Force Password Reset</button>' +
+        '<button class="action-btn action-info" onclick="executeUserAction(\'revoke\',\'' + esc(uid) + '\',\'' + uname + '\')">&#128274; Revoke Sessions</button>' +
+        '<button class="action-btn action-critical" onclick="executeUserAction(\'compromised\',\'' + esc(uid) + '\',\'' + uname + '\')">&#9888; Confirm Compromised</button>' +
+        '</div>';
+
+      document.getElementById('signinModalContent').innerHTML = actionBar +
         '<div class="detail-grid" style="margin-bottom:16px;">' +
           '<div class="detail-section"><h4>User &amp; Status</h4>' +
             '<div class="detail-row"><span class="detail-label">Display Name</span><span class="detail-value">' + esc(s.userDisplayName || '-') + '</span></div>' +
@@ -1514,6 +1575,57 @@
     }
 
     function closeSigninModal() { document.getElementById('signinModal').classList.remove('show'); }
+
+    // ===== SECURITY ACTION BUTTONS =====
+    async function executeUserAction(action, userId, displayName) {
+      const actions = {
+        block: { endpoint: '/api/block-user', label: 'BLOCK', confirm: 'Are you sure you want to DISABLE the account "' + displayName + '"?\n\nThey will be IMMEDIATELY locked out of all Microsoft 365 services.\n\nThis action can be reversed with Enable User.' },
+        enable: { endpoint: '/api/enable-user', label: 'ENABLE', confirm: 'Re-enable the account "' + displayName + '"?\n\nThey will be able to sign in again.' },
+        reset: { endpoint: '/api/reset-password', label: 'FORCE PASSWORD RESET', confirm: 'Force "' + displayName + '" to change their password on next sign-in (with MFA)?\n\nThey will be prompted immediately at next login.' },
+        revoke: { endpoint: '/api/revoke-sessions', label: 'REVOKE SESSIONS', confirm: 'Revoke ALL active sessions for "' + displayName + '"?\n\nThey will be signed out of all devices and need to sign in again.' },
+        compromised: { endpoint: '/api/confirm-compromised', label: 'CONFIRM COMPROMISED', confirm: 'WARNING: Confirming "' + displayName + '" as COMPROMISED will:\n\n- Set their risk to HIGH in Azure AD Identity Protection\n- Trigger any CA policies conditioned on user risk\n- May block access or force password change\n\nOnly do this if you believe the account is truly compromised.' },
+        dismiss: { endpoint: '/api/dismiss-risk', label: 'DISMISS RISK', confirm: 'Dismiss the risk flag for "' + displayName + '"?\n\nThis marks the user as safe.' }
+      };
+      const act = actions[action];
+      if (!act) return;
+      if (!confirm(act.confirm)) return;
+
+      // Find the clicked button and show spinner
+      event.target.disabled = true;
+      const origText = event.target.innerHTML;
+      event.target.innerHTML = '&#8987; Processing...';
+
+      try {
+        const res = await fetch(act.endpoint, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ userId })
+        });
+        const data = await res.json();
+        if (data.success) {
+          showToast(act.label + ' executed on ' + displayName + ' successfully');
+          event.target.innerHTML = '&#9989; Done';
+          setTimeout(() => { event.target.innerHTML = origText; event.target.disabled = false; }, 3000);
+        } else {
+          showToast('Error: ' + (data.error || 'Unknown error').substring(0, 100));
+          event.target.innerHTML = origText;
+          event.target.disabled = false;
+        }
+      } catch (e) {
+        showToast('Error: ' + e.message);
+        event.target.innerHTML = origText;
+        event.target.disabled = false;
+      }
+    }
+
+    // Helper: inline action buttons for Smart Insights rows
+    function userActionBtns(userId, name) {
+      return '<div style="display:flex;gap:4px;margin-top:3px;">' +
+        '<button class="action-btn action-danger" style="padding:2px 6px;font-size:9px;" onclick="event.stopPropagation();executeUserAction(\'block\',\'' + esc(userId) + '\',\'' + esc(name) + '\')">Block</button>' +
+        '<button class="action-btn action-warning" style="padding:2px 6px;font-size:9px;" onclick="event.stopPropagation();executeUserAction(\'reset\',\'' + esc(userId) + '\',\'' + esc(name) + '\')">Reset PW</button>' +
+        '<button class="action-btn action-info" style="padding:2px 6px;font-size:9px;" onclick="event.stopPropagation();executeUserAction(\'revoke\',\'' + esc(userId) + '\',\'' + esc(name) + '\')">Revoke</button>' +
+        '</div>';
+    }
 
     async function fetchSigninsForDashboard() {
       try {
@@ -1560,6 +1672,108 @@
       } catch (e) {
         // Sign-in data unavailable — skip silently (may need Azure AD Premium)
       }
+    }
+
+    // ===== SECURITY INTELLIGENCE =====
+    async function fetchSecurityIntelligence() {
+      const panel = document.getElementById('dashSecurityIntel');
+      if (!panel) return;
+      panel.style.display = 'block';
+      // Fetch all 3 in parallel, each with graceful error handling
+      await Promise.allSettled([fetchSecureScore(), fetchRiskyUsers(), fetchDefenderAlerts()]);
+    }
+
+    async function fetchSecureScore() {
+      const detail = document.getElementById('secureScoreDetail');
+      const pctEl = document.getElementById('secureScorePct');
+      const arcEl = document.getElementById('secureScoreArc');
+      const topEl = document.getElementById('secureScoreTop');
+      try {
+        const res = await fetch('/api/secure-score');
+        const data = await res.json();
+        if (data.error) { detail.innerHTML = '<span style="color:#d13438;">' + (data.hint || data.error).substring(0, 80) + '</span>'; return; }
+        if (!data.currentScore && data.currentScore !== 0) { detail.textContent = 'No score data available.'; return; }
+        const pct = data.percentage || 0;
+        pctEl.textContent = pct + '%';
+        // Animate arc: circumference = 2*PI*52 = 326.73
+        const dash = Math.round(326.73 * pct / 100);
+        arcEl.setAttribute('stroke-dasharray', dash + ' 327');
+        arcEl.setAttribute('stroke', pct >= 70 ? '#107c10' : pct >= 40 ? '#ff8c00' : '#d13438');
+        pctEl.style.color = pct >= 70 ? '#107c10' : pct >= 40 ? '#ff8c00' : '#d13438';
+        let detailHtml = '<strong>' + data.currentScore.toFixed(1) + '</strong> / ' + data.maxScore.toFixed(1);
+        if (data.comparatives && data.comparatives.AllTenants) {
+          detailHtml += '<br>Industry avg: <strong>' + data.comparatives.AllTenants.toFixed(1) + '</strong>';
+        }
+        detail.innerHTML = detailHtml;
+        if (data.improvements && data.improvements.length) {
+          topEl.style.display = 'block';
+          topEl.innerHTML = '<div style="font-weight:600;margin-bottom:4px;">Top improvements:</div>' +
+            data.improvements.slice(0, 5).map(i =>
+              '<div style="padding:3px 0;border-bottom:1px solid #f3f2f1;">' + esc(i.name.replace(/([A-Z])/g, ' $1').trim()) +
+              ' <span style="color:#0078d4;">+' + (i.max - i.current).toFixed(1) + '</span></div>'
+            ).join('');
+        }
+      } catch (e) { detail.textContent = 'Failed to load.'; }
+    }
+
+    async function fetchRiskyUsers() {
+      const summary = document.getElementById('riskyUsersSummary');
+      const list = document.getElementById('riskyUsersList');
+      try {
+        const res = await fetch('/api/risky-users');
+        const data = await res.json();
+        if (data.error) {
+          summary.innerHTML = '';
+          list.innerHTML = '<span style="color:#888;">' + (data.hint || 'Requires Azure AD Premium P2').substring(0, 80) + '</span>';
+          return;
+        }
+        const s = data.summary || {};
+        const pill = (l, v, bg, fg) => v > 0 ? '<span style="background:' + bg + ';color:' + fg + ';padding:2px 8px;border-radius:10px;font-size:10px;font-weight:600;">' + v + ' ' + l + '</span>' : '';
+        summary.innerHTML = pill('High', s.high, '#fde7e9', '#d13438') + pill('Medium', s.medium, '#fff4ce', '#8a6914') + pill('Low', s.low, '#e8f5e9', '#107c10') + pill('At Risk', s.atRisk, '#fde7e9', '#d13438');
+        const users = data.riskyUsers || [];
+        if (!users.length) { list.innerHTML = '<span style="color:#107c10;">&#9989; No risky users detected.</span>'; return; }
+        list.innerHTML = users.slice(0, 15).map(u => {
+          const rlColor = u.riskLevel === 'high' ? '#d13438' : u.riskLevel === 'medium' ? '#ff8c00' : '#107c10';
+          return '<div style="display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid #f3f2f1;">' +
+            '<div style="min-width:0;flex:1;"><div style="font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + esc(u.userDisplayName || u.userPrincipalName) + '</div>' +
+            '<div style="font-size:10px;color:#666;">' + esc(u.userPrincipalName || '') + '</div></div>' +
+            '<div style="display:flex;align-items:center;gap:6px;">' +
+            '<span style="background:' + rlColor + ';color:white;padding:1px 6px;border-radius:6px;font-size:9px;font-weight:700;">' + (u.riskLevel || '').toUpperCase() + '</span>' +
+            '<button class="action-btn action-danger" style="padding:2px 6px;font-size:9px;" onclick="executeUserAction(\'block\',\'' + esc(u.id) + '\',\'' + esc(u.userDisplayName || '') + '\')">Block</button>' +
+            '<button class="action-btn action-warning" style="padding:2px 6px;font-size:9px;" onclick="executeUserAction(\'reset\',\'' + esc(u.id) + '\',\'' + esc(u.userDisplayName || '') + '\')">Reset</button>' +
+            '</div></div>';
+        }).join('');
+      } catch (e) { list.innerHTML = '<span style="color:#888;">Failed to load.</span>'; }
+    }
+
+    async function fetchDefenderAlerts() {
+      const summary = document.getElementById('defenderAlertsSummary');
+      const list = document.getElementById('defenderAlertsList');
+      try {
+        const res = await fetch('/api/security-alerts');
+        const data = await res.json();
+        if (data.error) {
+          summary.innerHTML = '';
+          list.innerHTML = '<span style="color:#888;">' + (data.hint || 'Requires SecurityAlert.Read.All').substring(0, 80) + '</span>';
+          return;
+        }
+        const s = data.summary || {};
+        const pill = (l, v, bg, fg) => v > 0 ? '<span style="background:' + bg + ';color:' + fg + ';padding:2px 8px;border-radius:10px;font-size:10px;font-weight:600;">' + v + ' ' + l + '</span>' : '';
+        summary.innerHTML = pill('High', s.high, '#fde7e9', '#d13438') + pill('Medium', s.medium, '#fff4ce', '#8a6914') + pill('Low', s.low, '#e8f5e9', '#107c10') + pill('New', s.new || s.newCount, '#eef6fc', '#0078d4');
+        const alerts = data.alerts || [];
+        if (!alerts.length) { list.innerHTML = '<span style="color:#107c10;">&#9989; No active security alerts.</span>'; return; }
+        list.innerHTML = alerts.slice(0, 15).map(a => {
+          const sevColor = a.severity === 'high' ? '#d13438' : a.severity === 'medium' ? '#ff8c00' : a.severity === 'low' ? '#ffaa44' : '#0078d4';
+          return '<div style="padding:6px 0;border-bottom:1px solid #f3f2f1;">' +
+            '<div style="display:flex;align-items:center;gap:6px;">' +
+            '<span style="background:' + sevColor + ';color:white;padding:1px 6px;border-radius:6px;font-size:9px;font-weight:700;">' + (a.severity || '').toUpperCase() + '</span>' +
+            '<span style="font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + esc(a.title || 'Alert') + '</span>' +
+            '</div>' +
+            '<div style="font-size:10px;color:#666;margin-top:2px;">' + (a.createdDateTime ? new Date(a.createdDateTime).toLocaleString() : '') +
+            (a.alertWebUrl ? ' &middot; <a href="' + esc(a.alertWebUrl) + '" target="_blank" style="color:#0078d4;">View in Defender</a>' : '') +
+            '</div></div>';
+        }).join('');
+      } catch (e) { list.innerHTML = '<span style="color:#888;">Failed to load.</span>'; }
     }
 
     function renderSigninCharts(signins) {
@@ -2199,6 +2413,7 @@
       document.getElementById('lastUpdated').textContent = 'Loading...';
       await Promise.all([fetchDevices(), fetchPolicies(), fetchUserCoverage()]);
       fetchSigninsForDashboard(); // non-blocking — needs Azure AD Premium
+      fetchSecurityIntelligence(); // non-blocking — needs Defender/Identity Protection perms
       document.getElementById('lastUpdated').textContent = new Date().toLocaleTimeString();
       btn.classList.remove('spinning');
     }
