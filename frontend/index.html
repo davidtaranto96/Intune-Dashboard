@@ -561,14 +561,6 @@
 
       <!-- SIGN-IN LOGS -->
       <div id="signins" class="tab-content">
-        <div class="summary-cards" id="signinSummary">
-          <div class="card clickable" onclick="signinQuickFilter('all')" data-sfilter="all"><div class="label">Total Sign-ins</div><div class="value blue" id="totalSignins">-</div></div>
-          <div class="card clickable" onclick="signinQuickFilter('success')" data-sfilter="success"><div class="label">Successful</div><div class="value green" id="successSignins">-</div></div>
-          <div class="card clickable" onclick="signinQuickFilter('blocked')" data-sfilter="blocked"><div class="label">Blocked</div><div class="value red" id="blockedSignins">-</div></div>
-          <div class="card clickable" onclick="signinQuickFilter('ca_blocked')" data-sfilter="ca_blocked"><div class="label">CA Blocked</div><div class="value red" id="caBlockedSignins">-</div></div>
-          <div class="card clickable" onclick="signinQuickFilter('mfa')" data-sfilter="mfa"><div class="label">MFA Required</div><div class="value orange" id="mfaSignins">-</div></div>
-          <div class="card clickable" onclick="signinQuickFilter('risky')" data-sfilter="risky"><div class="label">Risky</div><div class="value red" id="riskySignins">-</div></div>
-        </div>
         <div id="smartInsights" style="display:none;background:white;border-radius:14px;padding:24px;margin-bottom:20px;box-shadow:0 2px 8px rgba(0,0,0,0.10);">
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;flex-wrap:wrap;gap:10px;">
             <h3 style="margin:0;font-size:18px;color:#201f1e;">&#128200; Smart Insights — Riesgo por cuenta</h3>
@@ -596,6 +588,14 @@
         </div>
         <div id="signinRecommendation" style="display:none;background:#fff4ce;border-left:4px solid #ff8c00;padding:12px 16px;border-radius:8px;margin-bottom:16px;font-size:13px;"></div>
         <div id="signinDiagnostics" style="display:none;background:#eef6fc;border-left:4px solid #0078d4;padding:10px 14px;border-radius:6px;margin-bottom:12px;font-size:12px;color:#333;font-family:monospace;"></div>
+        <div class="summary-cards" id="signinSummary" style="margin-bottom:16px;">
+          <div class="card clickable" onclick="signinQuickFilter('all')" data-sfilter="all"><div class="label">Total Sign-ins</div><div class="value blue" id="totalSignins">-</div></div>
+          <div class="card clickable" onclick="signinQuickFilter('success')" data-sfilter="success"><div class="label">Successful</div><div class="value green" id="successSignins">-</div></div>
+          <div class="card clickable" onclick="signinQuickFilter('blocked')" data-sfilter="blocked"><div class="label">Blocked</div><div class="value red" id="blockedSignins">-</div></div>
+          <div class="card clickable" onclick="signinQuickFilter('ca_blocked')" data-sfilter="ca_blocked"><div class="label">CA Blocked</div><div class="value red" id="caBlockedSignins">-</div></div>
+          <div class="card clickable" onclick="signinQuickFilter('mfa')" data-sfilter="mfa"><div class="label">MFA Required</div><div class="value orange" id="mfaSignins">-</div></div>
+          <div class="card clickable" onclick="signinQuickFilter('risky')" data-sfilter="risky"><div class="label">Risky</div><div class="value red" id="riskySignins">-</div></div>
+        </div>
         <div class="table-container">
           <div class="table-header">
             <h3>Recent Sign-in Activity</h3>
