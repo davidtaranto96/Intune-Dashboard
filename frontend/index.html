@@ -458,10 +458,10 @@
           <div id="dashSecurityNote" style="display:none;font-size:12px;color:#999;font-style:italic;margin-top:4px;"></div>
         </div>
 
-        <!-- Security Intelligence (Secure Score, Risky Users, Defender Alerts) -->
+        <!-- Security Intelligence (Secure Score, Risky Users, Defender Alerts, MDE Devices) -->
         <div id="dashSecurityIntel" style="display:none;margin-bottom:24px;">
-          <div class="dash-section-title">&#128737; Security Intelligence <span style="font-size:11px;font-weight:400;color:#999;">(Microsoft Secure Score, Risky Users, Defender Alerts)</span></div>
-          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;">
+          <div class="dash-section-title">&#128737; Security Intelligence <span style="font-size:11px;font-weight:400;color:#999;">(Microsoft Secure Score, Risky Users, Defender Alerts, Endpoint)</span></div>
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px;">
             <!-- Secure Score -->
             <div id="secureScoreCard" style="background:white;border-radius:12px;padding:20px;box-shadow:0 1px 3px rgba(0,0,0,0.08);text-align:center;" onclick="window.open('https://security.microsoft.com/securescore','_blank')" title="Abrir Microsoft Secure Score">
               <div style="font-size:13px;font-weight:600;color:#201f1e;margin-bottom:12px;">&#127919; Microsoft Secure Score <span style="font-size:10px;color:#0078d4;">&#8599;</span></div>
@@ -486,6 +486,12 @@
               <div style="font-size:13px;font-weight:600;color:#201f1e;margin-bottom:12px;">&#128737; Defender Alerts</div>
               <div id="defenderAlertsSummary" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;"></div>
               <div id="defenderAlertsList" style="max-height:250px;overflow-y:auto;font-size:11px;">Loading...</div>
+            </div>
+            <!-- Defender for Endpoint Devices -->
+            <div id="defenderEndpointCard" style="background:white;border-radius:12px;padding:20px;box-shadow:0 1px 3px rgba(0,0,0,0.08);" onclick="window.open('https://security.microsoft.com/machines','_blank')" title="Abrir Defender for Endpoint" style="cursor:pointer;">
+              <div style="font-size:13px;font-weight:600;color:#201f1e;margin-bottom:12px;cursor:pointer;">&#128421; Defender Endpoint <span style="font-size:10px;color:#d13438;">MDE</span> <span style="font-size:10px;color:#0078d4;">&#8599;</span></div>
+              <div id="mdeDevicesSummary" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;"></div>
+              <div id="mdeDevicesList" style="max-height:250px;overflow-y:auto;font-size:11px;">Loading...</div>
             </div>
           </div>
         </div>
@@ -1975,8 +1981,8 @@
       const panel = document.getElementById('dashSecurityIntel');
       if (!panel) return;
       panel.style.display = 'block';
-      // Fetch all 3 in parallel, each with graceful error handling
-      await Promise.allSettled([fetchSecureScore(), fetchRiskyUsers(), fetchDefenderAlerts()]);
+      // Fetch all 4 in parallel, each with graceful error handling
+      await Promise.allSettled([fetchSecureScore(), fetchRiskyUsers(), fetchDefenderAlerts(), fetchDefenderMachines()]);
     }
 
     async function fetchSecureScore() {
@@ -2121,6 +2127,66 @@
           '<div style="font-size:10px;color:#666;margin-top:2px;">' + (a.createdDateTime ? new Date(a.createdDateTime).toLocaleString() : '') +
           (a.alertWebUrl ? ' &middot; <a href="' + esc(a.alertWebUrl) + '" target="_blank" style="color:#0078d4;">View in Defender</a>' : '') +
           '</div></div>';
+      }).join('');
+    }
+
+    async function fetchDefenderMachines() {
+      const summary = document.getElementById('mdeDevicesSummary');
+      const list = document.getElementById('mdeDevicesList');
+      try {
+        const res = await fetch('/api/defender-machines');
+        const data = await res.json();
+        if (data.error) {
+          summary.innerHTML = '';
+          list.innerHTML = `<div style="color:#888;font-size:11px;padding:8px 0;">${(data.hint || 'Requires Machine.Read.All permission').substring(0, 120)}</div>`;
+          return;
+        }
+        const s = data.summary || {};
+        window._mdeDevicesAll = data.machines || [];
+        const pill = (l, v, bg, fg, f) => v > 0
+          ? `<span class="intel-pill" style="background:${bg};color:${fg};" onclick="filterMdeDevices('${f}',event)">${v} ${l}</span>` : '';
+        summary.innerHTML =
+          `<span class="intel-pill intel-pill-reset intel-pill-active" onclick="filterMdeDevices('all',event)">&#128421; All ${s.total || 0}</span>` +
+          pill('High Risk', s.riskHigh, '#fde7e9', '#d13438', 'riskHigh') +
+          pill('Medium Risk', s.riskMedium, '#fff4ce', '#8a6914', 'riskMedium') +
+          pill('High Exposure', s.exposureHigh, '#fde7e9', '#8b0000', 'exposureHigh') +
+          pill('Inactive', s.inactive, '#f3f2f1', '#666', 'inactive');
+        renderMdeDevicesList(window._mdeDevicesAll);
+      } catch (e) { list.innerHTML = '<span style="color:#888;">Failed to load Defender Endpoint data.</span>'; }
+    }
+
+    function filterMdeDevices(filter, evt) {
+      document.querySelectorAll('#mdeDevicesSummary .intel-pill').forEach(p => p.classList.remove('intel-pill-active'));
+      if (evt && evt.target) evt.target.classList.add('intel-pill-active');
+      const devices = window._mdeDevicesAll || [];
+      const filtered =
+        filter === 'all'          ? devices :
+        filter === 'riskHigh'     ? devices.filter(m => m.riskScore === 'high') :
+        filter === 'riskMedium'   ? devices.filter(m => m.riskScore === 'medium') :
+        filter === 'exposureHigh' ? devices.filter(m => m.exposureLevel === 'high') :
+        filter === 'inactive'     ? devices.filter(m => m.healthStatus !== 'Active') : devices;
+      renderMdeDevicesList(filtered);
+    }
+
+    function renderMdeDevicesList(devices) {
+      const list = document.getElementById('mdeDevicesList');
+      if (!devices.length) { list.innerHTML = '<span style="color:#107c10;">&#9989; No at-risk devices found.</span>'; return; }
+      const riskColor = r => r === 'high' ? '#d13438' : r === 'medium' ? '#ff8c00' : r === 'low' ? '#107c10' : '#bbb';
+      const expColor  = e => e === 'high' ? '#d13438' : e === 'medium' ? '#ff8c00' : '#bbb';
+      const healthIcon = h => h === 'Active' ? '&#128994;' : h === 'Inactive' ? '&#128308;' : '&#128993;';
+      list.innerHTML = devices.slice(0, 15).map(m => {
+        const name = esc(m.computerDnsName || m.id || 'Unknown');
+        const lastSeen = m.lastSeen ? new Date(m.lastSeen).toLocaleDateString() : '-';
+        return `<div style="display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid #f3f2f1;">
+          <div style="min-width:0;flex:1;">
+            <div style="font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${healthIcon(m.healthStatus)} ${name}</div>
+            <div style="font-size:10px;color:#666;">${esc(m.osPlatform || '')} &middot; Last seen: ${lastSeen}</div>
+          </div>
+          <div style="display:flex;gap:4px;align-items:center;flex-shrink:0;">
+            <span style="background:${riskColor(m.riskScore)};color:white;padding:1px 5px;border-radius:4px;font-size:9px;font-weight:700;" title="Device risk">R:${(m.riskScore || 'none').toUpperCase()}</span>
+            <span style="background:${expColor(m.exposureLevel)};color:white;padding:1px 5px;border-radius:4px;font-size:9px;font-weight:700;" title="Exposure level">E:${(m.exposureLevel || 'none').toUpperCase()}</span>
+          </div>
+        </div>`;
       }).join('');
     }
 

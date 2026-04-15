@@ -6,6 +6,8 @@ const CLIENT_SECRET = process.env.CLIENT_SECRET;
 
 let cachedToken = null;
 let tokenExpiry = 0;
+let cachedMdeToken = null;
+let mdeTokenExpiry = 0;
 
 async function getAccessToken() {
   if (cachedToken && Date.now() < tokenExpiry) {
@@ -94,4 +96,32 @@ async function graphRequestAllPages(endpoint) {
   return results;
 }
 
-module.exports = { getAccessToken, graphRequest, graphRequestAllPages };
+// Defender for Endpoint API (api.securitycenter.microsoft.com)
+async function getMdeToken() {
+  if (cachedMdeToken && Date.now() < mdeTokenExpiry) return cachedMdeToken;
+  const tokenUrl = `https://login.microsoftonline.com/${TENANT_ID}/oauth2/v2.0/token`;
+  const params = new URLSearchParams({
+    client_id: CLIENT_ID,
+    client_secret: CLIENT_SECRET,
+    scope: 'https://api.securitycenter.microsoft.com/.default',
+    grant_type: 'client_credentials'
+  });
+  const response = await fetch(tokenUrl, { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: params.toString() });
+  if (!response.ok) { const err = await response.text(); throw new Error(`MDE token failed: ${response.status} - ${err}`); }
+  const data = await response.json();
+  cachedMdeToken = data.access_token;
+  mdeTokenExpiry = Date.now() + (data.expires_in - 300) * 1000;
+  return cachedMdeToken;
+}
+
+async function mdeRequest(endpoint, method = 'GET', body = null) {
+  const token = await getMdeToken();
+  const options = { method, headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' } };
+  if (body) options.body = JSON.stringify(body);
+  const response = await fetch(`https://api.securitycenter.microsoft.com/api${endpoint}`, options);
+  if (!response.ok) { const err = await response.text(); throw new Error(`MDE API error: ${response.status} - ${err}`); }
+  if (response.status === 204) return { success: true };
+  return response.json();
+}
+
+module.exports = { getAccessToken, graphRequest, graphRequestAllPages, mdeRequest };
