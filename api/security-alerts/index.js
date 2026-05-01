@@ -2,20 +2,34 @@ const { graphRequest } = require('../graphClient');
 
 module.exports = async function (context, req) {
   try {
-    const data = await graphRequest('/security/alerts_v2?$top=50&$orderby=createdDateTime desc');
-    const alerts = (data.value || []).map(a => ({
-      id: a.id,
-      title: a.title,
-      description: a.description,
-      severity: a.severity,
-      status: a.status,
-      category: a.category,
-      createdDateTime: a.createdDateTime,
-      lastUpdateDateTime: a.lastUpdateDateTime,
-      alertWebUrl: a.alertWebUrl,
-      providerAlertId: a.providerAlertId,
-      incidentWebUrl: a.incidentWebUrl
-    }));
+    const data = await graphRequest('/security/alerts_v2?$top=50&$orderby=createdDateTime desc&$expand=evidence');
+    const alerts = (data.value || []).map(a => {
+      // Extract device info from evidence
+      const deviceEvidence = (a.evidence || []).find(e =>
+        e['@odata.type'] === '#microsoft.graph.security.deviceEvidence'
+      );
+      const deviceDnsName = deviceEvidence ? (deviceEvidence.deviceDnsName || deviceEvidence.deviceId || '') : '';
+      // Threat family from additionalData or category
+      const threatFamilyName = (a.additionalData && a.additionalData.ThreatFamilyName)
+        || (a.additionalData && a.additionalData.threatFamilyName)
+        || '';
+      return {
+        id: a.id,
+        title: a.title,
+        description: a.description,
+        severity: a.severity,
+        status: a.status,
+        category: a.category,
+        serviceSource: a.serviceSource || '',
+        deviceDnsName,
+        threatFamilyName,
+        createdDateTime: a.createdDateTime,
+        lastUpdateDateTime: a.lastUpdateDateTime,
+        alertWebUrl: a.alertWebUrl,
+        providerAlertId: a.providerAlertId,
+        incidentWebUrl: a.incidentWebUrl
+      };
+    });
 
     const summary = {
       total: alerts.length,
